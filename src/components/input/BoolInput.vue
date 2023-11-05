@@ -1,0 +1,15 @@
+<template>
+  <input type="checkbox" v-model="curVal" @change="set(props.path, curVal)" />
+</template>
+
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useConfigurationStore } from '../../stores/configuration'
+
+const props = defineProps(['path'])
+const configuration = useConfigurationStore()
+const { get } = storeToRefs(configuration)
+const { set } = configuration
+
+const curVal = get.value(props.path)
+</script>

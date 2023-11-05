@@ -1,0 +1,43 @@
+@import './base.css';
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: var(--vt-c-accent);
+  transition: 0.4s;
+}
+
+input {
+  border-radius: .4rem;
+  background-color: transparent;
+  border: 0.1rem solid #d1d1d1;
+  box-shadow: none;
+  box-sizing: inherit;
+  height: 2rem;
+  padding: .5rem .7rem .5rem;
+  width: 100%;
+  line-height: 1.15;
+}
+
+input[type="checkbox"]  {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+@media (prefers-color-scheme: dark) {
+ input {
+  color: var(--vt-c-text-dark-1)
+ }
+}
+
+
+input:focus {
+  border-color: var(--vt-c-accent);
+  outline: 0;
+}
