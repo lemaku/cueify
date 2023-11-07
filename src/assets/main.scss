@@ -25,6 +25,11 @@ input {
   line-height: 1.15;
 }
 
+label {
+  line-height: 2rem;
+  font-size: 0.8rem;
+}
+
 input[type="checkbox"]  {
   width: 1.2rem;
   height: 1.2rem;
@@ -36,8 +41,18 @@ input[type="checkbox"]  {
  }
 }
 
-
 input:focus {
-  border-color: var(--vt-c-accent);
   outline: 0;
+}
+
+input:not(.input-error):not(.input-success):focus  {
+  border-color: var(--vt-c-accent);
+}
+
+.input-error {
+  border-color: var(--vt-c-error);
+}
+
+.input-success:focus {
+  border-color: var(--vt-c-success);
 }

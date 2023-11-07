@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
 import { ref } from 'vue'
-import { supportedFormats, useConfigurationStore, type Format } from '../stores/configuration'
+import { supportedFormats, useConfigurationStore, type Format } from '@/stores/configuration'
 
 const configuration = useConfigurationStore()
 
