@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { validate } from '@/services/rest'
+import { cloneDeep } from 'lodash';
 
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
@@ -98,17 +100,30 @@ export const useConfigurationStore = defineStore({
         }
       ]
     },
-    set(path: string[], value: any) {
-      let obj = this.rawCurrent
-      let i = 0
-      for (i = 0; i < path.length - 1; i++) {
-        obj = obj[path[i]]
+    async set(path: string[], value: any) {
+      const newCurrent = setValue(path, value, this.rawCurrent)
+      const res = await validate(path, newCurrent);
+
+      if (res.valid) {
+        this.rawCurrent = newCurrent;
       }
 
-      obj[path[i]] = value
+      return res;
     },
     changeFormat(format: Format) {
       this.rawFormat = format
     }
   }
 })
+
+function setValue(path: string[], value: any, object: any) : any {
+  const ref = cloneDeep(object ?? {});
+  let obj = ref;
+  let i = 0
+  for (i = 0; i < path.length - 1; i++) {
+    obj = obj[path[i]]
+  }
+
+  obj[path[i]] = value;
+  return ref;
+}

@@ -12,7 +12,7 @@ import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import { computed } from 'vue'
 import { stringify } from 'yaml'
-import { useConfigurationStore } from '../stores/configuration'
+import { useConfigurationStore } from '@/stores/configuration'
 
 hljs.registerLanguage('json', jsonHighlight)
 hljs.registerLanguage('plaintext', textHightlight)

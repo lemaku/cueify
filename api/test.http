@@ -1,0 +1,18 @@
+## TEST validate should fail if matNr only has 7 digits
+POST {{host}}/validate
+Content-Type: application/json
+
+{
+  "path": ["universities", "tuwien", "students", "0", "matNr"],
+  "value": {
+    "universities": {
+      "tuwien": {
+        "students": [
+          {
+            "matNr": "1211987"
+          }
+        ]
+      }
+    }
+  }
+}

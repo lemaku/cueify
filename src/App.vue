@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { useConfigurationStore } from './stores/configuration'
+import { useConfigurationStore } from '@/stores/configuration'
 
 const configuration = useConfigurationStore()
 configuration.load()
