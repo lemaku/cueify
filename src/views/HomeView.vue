@@ -19,9 +19,8 @@ import FormatSelector from '@/components/FormatSelector.vue'
 .container {
   display: grid;
   grid-template-rows: min-content auto;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 50% 50%;
   gap: 5px 20px;
-  padding: 20px;
 }
 
 .breadcrumb {

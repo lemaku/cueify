@@ -11,10 +11,30 @@ import (
 func RunServer(address string) {
 	router := gin.Default()
 	router.POST("/validate", validateValue)
+	router.POST("/inspect", inspectValue)
 
 	if err := router.Run(address); err != nil {
 		panic(fmt.Sprintf("Could not start server on %s", address))
 	}
+}
+
+type inspectBody struct {
+	Path  []string    `json:"path"`
+	Value interface{} `json:"value"`
+}
+
+func inspectValue(c *gin.Context) {
+	var body inspectBody
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Invalid body"})
+		return
+	}
+
+	jsonString, _ := json.Marshal(body.Value)
+	properties := cue.Inspect(body.Path, string(jsonString))
+
+	c.JSON(http.StatusOK, properties)
 }
 
 type validationResult struct {
@@ -36,9 +56,6 @@ func validateValue(c *gin.Context) {
 	}
 
 	jsonString, _ := json.Marshal(body.Value)
-	fmt.Println(jsonString)
-	fmt.Println(body.Path)
-
 	success, errors := cue.Validate(body.Path, string(jsonString))
 
 	if errors != nil {

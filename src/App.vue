@@ -8,7 +8,9 @@
     </div>
   </header>
 
-  <RouterView class="main" />
+  <div class="main">
+    <RouterView />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -26,12 +28,11 @@ header {
   text-align: center;
 }
 
-main {
+.main {
   width: 100%;
-  max-width: 1500px;
+  max-width: 70vw;
   min-width: 800px;
   padding: 20px;
-  box-sizing: border-box;
 }
 
 nav {

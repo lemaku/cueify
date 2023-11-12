@@ -16,3 +16,25 @@ Content-Type: application/json
     }
   }
 }
+
+### TEST inspect should work
+POST {{host}}/inspect
+Content-Type: application/json
+
+{
+  "path": ["universities", "tuwien", "students"],
+  "value": {
+    "universities": {
+      "tuwien": {
+        "students": [
+          {
+            "matNr": "12119877",
+            "name": "Leon K",
+            "semester": 5,
+            "active": true
+          }
+        ]
+      }
+    }
+  }
+}

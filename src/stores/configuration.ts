@@ -1,17 +1,13 @@
 import { defineStore } from 'pinia'
-import { validate } from '@/services/rest'
-import { cloneDeep } from 'lodash';
+import { inspect, validate } from '@/services/rest'
+import { cloneDeep } from 'lodash'
+import type { Field, CurrentType } from '@/types/app'
 
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
 
 export type BreadCrumb = {
   crumb: string
-  path: string[]
-}
-
-export type Input = {
-  type: 'string' | 'number' | 'bool'
   path: string[]
 }
 
@@ -22,6 +18,7 @@ export const useConfigurationStore = defineStore({
     rawCurrent: {
       universities: {
         tuwien: {
+          name: 'Vienna University of Technology',
           students: [
             {
               matNr: '12119877',
@@ -33,12 +30,16 @@ export const useConfigurationStore = defineStore({
         }
       }
     } as any,
-    rawFields: [] as Input[],
+    rawCurrentType: 'complex' as CurrentType,
+    rawFields: [] as Field[],
     rawFormat: 'json' as Format
   }),
   getters: {
-    fields: (state): Input[] => {
+    fields: (state): Field[] => {
       return state.rawFields
+    },
+    currentType: (state): CurrentType => {
+      return state.rawCurrentType
     },
     current: (state): any => {
       return state.rawCurrent
@@ -72,43 +73,26 @@ export const useConfigurationStore = defineStore({
     }
   },
   actions: {
-    jumpTo(path: string[]) {
+    async jumpTo(path: string[]) {
       if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
-        console.log('jumping to ', path)
         this.rawPath = path
+        this.load()
       }
     },
     async load() {
-      console.log('syncing with server')
-      // send to api
-      this.rawFields = [
-        {
-          type: 'string',
-          path: ['universities', 'tuwien', 'students', '0', 'matNr']
-        },
-        {
-          type: 'string',
-          path: ['universities', 'tuwien', 'students', '0', 'name']
-        },
-        {
-          type: 'number',
-          path: ['universities', 'tuwien', 'students', '0', 'semester']
-        },
-        {
-          type: 'bool',
-          path: ['universities', 'tuwien', 'students', '0', 'active']
-        }
-      ]
+      const result = await inspect(this.rawPath, this.rawCurrent)
+      this.rawCurrentType = result.type
+      this.rawFields = result.properties
     },
     async set(path: string[], value: any) {
       const newCurrent = setValue(path, value, this.rawCurrent)
-      const res = await validate(path, newCurrent);
+      const res = await validate(path, newCurrent)
 
       if (res.valid) {
-        this.rawCurrent = newCurrent;
+        this.rawCurrent = newCurrent
       }
 
-      return res;
+      return res
     },
     changeFormat(format: Format) {
       this.rawFormat = format
@@ -116,14 +100,14 @@ export const useConfigurationStore = defineStore({
   }
 })
 
-function setValue(path: string[], value: any, object: any) : any {
-  const ref = cloneDeep(object ?? {});
-  let obj = ref;
+function setValue(path: string[], value: any, object: any): any {
+  const ref = cloneDeep(object ?? {})
+  let obj = ref
   let i = 0
   for (i = 0; i < path.length - 1; i++) {
     obj = obj[path[i]]
   }
 
-  obj[path[i]] = value;
-  return ref;
+  obj[path[i]] = value
+  return ref
 }
