@@ -26,21 +26,23 @@ const { set } = configuration
 
 const curVal = ref(get.value(props.path))
 
+//TODO: bug where value of reused component is used instead of the actual pathc
+
 let errors = ref(undefined as string[] | undefined);
-let timeouts: number[] = [];
+// let timeouts: number[] = [];
 let success = ref(false);
 
 const onChange = async (path: string[], val: string) => {
-  timeouts.forEach(clearTimeout);
+  // timeouts.forEach(clearTimeout);
   const res = await set(path, val)
   if (!res.valid) {
     errors.value = res.errors
     success.value = false;
 
-    timeouts.push(setTimeout(() => {
-      curVal.value = get.value(props.path)
-      errors.value = undefined
-    }, 5000));
+    // timeouts.push(setTimeout(() => {
+    //   curVal.value = get.value(props.path)
+    //   errors.value = undefined
+    // }, 5000));
   } else {
     errors.value = undefined;
     success.value = true;
