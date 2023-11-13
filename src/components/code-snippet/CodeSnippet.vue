@@ -10,15 +10,19 @@ import yamlHighlight from 'highlight.js/lib/languages/yaml'
 import 'highlight.js/styles/github.css'
 import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
-import { computed } from 'vue'
 import { stringify } from 'yaml'
 import { useConfigurationStore } from '@/stores/configuration'
+import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 
 hljs.registerLanguage('json', jsonHighlight)
 hljs.registerLanguage('plaintext', textHightlight)
 hljs.registerLanguage('yaml', yamlHighlight)
 
+const props = defineProps(['path', 'depth'])
+
 const configuration = useConfigurationStore()
+const { get, current } = storeToRefs(configuration)
 
 const marked = new Marked(
   markedHighlight({
@@ -32,15 +36,18 @@ const marked = new Marked(
 
 const compiled = computed(() => {
   let snippet = ''
+
+  const code = props.path ? get.value(props.path) : current.value
+
   switch (configuration.format) {
     case 'json':
-      snippet = JSON.stringify(configuration.current, null, 2)
+      snippet = JSON.stringify(code, null, 2)
       break
     case 'yaml':
-      snippet = stringify(configuration.current)
+      snippet = stringify(code)
       break
     default:
-      snippet = snippet = JSON.stringify(configuration.current, null, 2)
+      snippet = JSON.stringify(code, null, 2)
       break
   }
 
@@ -52,6 +59,5 @@ const compiled = computed(() => {
 <style>
 code.hljs {
   border-radius: 10px;
-  padding-right: 10em !important;
 }
 </style>
