@@ -14,11 +14,21 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import router from '@/router'
 import { useConfigurationStore } from '@/stores/configuration'
+import { watch } from 'vue'
+import { RouterLink, RouterView } from 'vue-router'
 
 const configuration = useConfigurationStore()
-configuration.load()
+const { jumpTo } = configuration
+
+jumpTo((router.currentRoute.value.query.p ?? 'universities').toString().split('.'))
+configuration.summarize()
+
+watch(router.currentRoute, () => {
+  const path = (router.currentRoute.value.query.p ?? 'universities').toString()
+  jumpTo(path.split('.'))
+})
 </script>
 
 <style scoped>

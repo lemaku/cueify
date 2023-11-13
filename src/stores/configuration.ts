@@ -1,15 +1,11 @@
 import { defineStore } from 'pinia'
-import { inspect, validate } from '@/services/rest'
+import { inspect, summarize, validate } from '@/services/rest'
 import { cloneDeep } from 'lodash'
-import type { Field, CurrentType } from '@/types/app'
+import type { Field, CurrentType, ValueError, Path, BreadCrumb } from '@/types/app'
+import router from '@/router'
 
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
-
-export type BreadCrumb = {
-  crumb: string
-  path: string[]
-}
 
 export const useConfigurationStore = defineStore({
   id: 'configuration',
@@ -21,10 +17,10 @@ export const useConfigurationStore = defineStore({
           name: 'Vienna University of Technology',
           students: [
             {
-              matNr: '12119877',
-              name: 'Leon K',
-              semester: 5,
-              active: true
+              matNr: '12119877'
+              // name: 'Leon K',
+              // semester: 5,
+              // active: true
             }
           ]
         }
@@ -32,7 +28,8 @@ export const useConfigurationStore = defineStore({
     } as any,
     rawCurrentType: 'complex' as CurrentType,
     rawFields: [] as Field[],
-    rawFormat: 'json' as Format
+    rawFormat: 'json' as Format,
+    rawErrors: [] as ValueError[]
   }),
   getters: {
     fields: (state): Field[] => {
@@ -44,8 +41,11 @@ export const useConfigurationStore = defineStore({
     current: (state): any => {
       return state.rawCurrent
     },
-    path: (state): any => {
+    path: (state): Path => {
       return state.rawPath
+    },
+    errors: (state): ValueError[] => {
+      return state.rawErrors
     },
     breadcrumbs: (state): BreadCrumb[] => {
       const resultArray = []
@@ -74,15 +74,19 @@ export const useConfigurationStore = defineStore({
   },
   actions: {
     async jumpTo(path: string[]) {
+      console.log(path);
       if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
-        this.rawPath = path
-        this.load()
+        const result = await inspect(path, this.rawCurrent)
+        if (result.type != 'complex' && result.type != 'list') {
+          const parent = path.slice(0, path.length - 1)
+          const next = parent.length <= 0 ? ['universities'] : parent
+          router.push({ query: { p: next.join('.') } })
+        } else {
+          this.rawPath = path
+          this.rawCurrentType = result.type
+          this.rawFields = result.properties
+        }
       }
-    },
-    async load() {
-      const result = await inspect(this.rawPath, this.rawCurrent)
-      this.rawCurrentType = result.type
-      this.rawFields = result.properties
     },
     async set(path: string[], value: any) {
       const newCurrent = setValue(path, value, this.rawCurrent)
@@ -90,9 +94,14 @@ export const useConfigurationStore = defineStore({
 
       if (res.valid) {
         this.rawCurrent = newCurrent
+        this.summarize()
       }
 
       return res
+    },
+    async summarize() {
+      const result = await summarize(this.rawCurrent)
+      this.rawErrors = result.errors
     },
     changeFormat(format: Format) {
       this.rawFormat = format

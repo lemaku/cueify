@@ -1,6 +1,6 @@
 <template>
   <div class="form-container">
-    <template v-for="(field, index) in components" :key="index">
+    <template v-for="field in components" :key="field.path.join('.')">
       <label :for="field.path.join('.')">{{ field.path[field.path.length - 1] }}</label>
       <component
         :is="field.type"
@@ -54,8 +54,8 @@ const components = computed(() =>
 <style scoped>
 .form-container {
   display: grid;
-  grid-template-columns: min-content auto;
-  gap: 1em;
+  grid-template-columns: minmax(min-content, 30%) minmax(70%, 100%);
+  grid-gap: 1em;
   align-items: start;
   justify-items: start;
   height: fit-content;

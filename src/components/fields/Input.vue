@@ -26,8 +26,6 @@ const { set } = configuration
 
 const curVal = ref(get.value(props.path))
 
-//TODO: bug where value of reused component is used instead of the actual pathc
-
 let errors = ref(undefined as string[] | undefined);
 // let timeouts: number[] = [];
 let success = ref(false);

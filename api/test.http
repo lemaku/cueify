@@ -22,7 +22,7 @@ POST {{host}}/inspect
 Content-Type: application/json
 
 {
-  "path": ["universities", "tuwien", "students"],
+  "path": ["universities", "tuwien", "students", "0", "name"],
   "value": {
     "universities": {
       "tuwien": {
@@ -32,6 +32,24 @@ Content-Type: application/json
             "name": "Leon K",
             "semester": 5,
             "active": true
+          }
+        ]
+      }
+    }
+  }
+}
+
+### TEST summarize should work
+POST {{host}}/summarize
+Content-Type: application/json
+
+{
+  "value": {
+    "universities": {
+      "tuwien": {
+        "students": [
+          {
+            "matNr": "12119877"
           }
         ]
       }

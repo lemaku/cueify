@@ -1,6 +1,8 @@
 package main
 
-import "cueify/http"
+import (
+	"cueify/http"
+)
 
 func main() {
 	//fmt.Println(cue.Inspect([]string{"universities", "tuwien", "students", "0"}, cue.MissingPropVal))
@@ -8,6 +10,7 @@ func main() {
 	//fmt.Println(cue.Inspect([]string{"universities"}, cue.MissingPropVal))
 	//fmt.Println(success)
 	//fmt.Println(errors)
+	//fmt.Println(cue.Summarize(cue.MissingPropVal))
 
 	http.RunServer("localhost:8080")
 }

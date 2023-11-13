@@ -20,8 +20,9 @@ func Validate(path []string, json string) (bool, *ValidationError) {
 
 	value := context.CompileString(json, cue.Scope(schema))
 
-	err := value.Validate(cue.Attributes(true),
-		cue.Concrete(false),
+	err := value.Validate(
+		cue.Attributes(true),
+		cue.Concrete(true),
 		cue.Definitions(false),
 		cue.DisallowCycles(false),
 		cue.Docs(false),
@@ -31,9 +32,9 @@ func Validate(path []string, json string) (bool, *ValidationError) {
 	if err != nil {
 		var validationErrors []string
 
-		tmp := errors.Errors(err)
+		errs := errors.Errors(err)
 
-		for _, e := range tmp {
+		for _, e := range errs {
 			if reflect.DeepEqual(e.Path(), path) {
 				format, args := e.Msg()
 				validationErrors = append(validationErrors, fmt.Sprintf(format, args...))
@@ -43,7 +44,6 @@ func Validate(path []string, json string) (bool, *ValidationError) {
 		if len(validationErrors) > 0 {
 			return false, &ValidationError{validationErrors}
 		}
-
 	}
 
 	return true, nil

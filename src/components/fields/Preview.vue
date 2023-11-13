@@ -1,8 +1,8 @@
 <template>
   <div class="preview">
     <div class="inner">
-      <a class="link" @click="jumpTo(props.path)">
-        <p>{{ content }}</p></a
+      <router-link class="link" :to="{ query: { p: props.path.join('.') } }">
+        {{ content }}</router-link
       >
       <button class="extend" @click="collapsed = !collapsed">
         <ChevronRightIcon class="icon" v-if="collapsed" />
@@ -10,7 +10,7 @@
       </button>
     </div>
     <div v-if="!collapsed">
-      <CurrentConfig />
+      <CodeSnippet :path="props.path" class="snippet" />
     </div>
   </div>
 </template>
@@ -18,12 +18,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
-import CurrentConfig from '@/components/CurrentConfig.vue'
+import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
 import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/vue/20/solid'
 
 const props = defineProps(['path'])
 const configuration = useConfigurationStore()
-const { jumpTo } = configuration
 
 const content = JSON.stringify(configuration.get(props.path))
 const collapsed = ref(true)
@@ -52,12 +51,15 @@ const collapsed = ref(true)
   font-size: 0.8rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  /* https://lennartc.dk/en/css-text-overflow-ellipsis-not-working-or-pushing-flex-content-to-max-width/ */
+  /* https://lennartc.dk/en/css-text-overflow-ellipsis-not-working-or-pushing-flex-content-to-max-width/
   overflow: hidden;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  white-space: normal;
+  white-space: normal; */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .extend {
   width: fit-content;
@@ -68,6 +70,10 @@ const collapsed = ref(true)
   display: flex;
   padding-left: 0.3rem;
   padding-right: 0.3rem;
+}
+
+.snippet {
+  font-size: 0.8rem;
 }
 
 .icon {
