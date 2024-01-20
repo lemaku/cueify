@@ -19,8 +19,6 @@ export const useConfigurationStore = defineStore({
             {
               matNr: '12119877',
               name: 'Leon K',
-              semester: 5,
-              active: true
             }
           ]
         }
@@ -68,7 +66,7 @@ export const useConfigurationStore = defineStore({
         for (i = 0; i < path.length - 1; i++) {
           obj = obj[path[i]]
         }
-        return obj[path[i]]
+        return obj[path[i]];
       }
     }
   },
@@ -117,6 +115,7 @@ export const useConfigurationStore = defineStore({
     async summarize() {
       const result = await summarize(this.rawCurrent)
       this.rawErrors = result.errors
+      this.rawCurrent = result.value
     },
     changeFormat(format: Format) {
       this.rawFormat = format

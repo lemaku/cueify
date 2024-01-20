@@ -38,7 +38,7 @@ func Inspect(path []string, json string) InspectionResult {
 
 	var iter *cue.Iterator
 	if value.IncompleteKind() == cue.StructKind {
-		iter, _ = value.Fields()
+		iter, _ = value.Fields(cue.Optional(true))
 	} else if value.IncompleteKind() == cue.ListKind {
 		tmp, _ := value.List()
 		iter = &tmp
