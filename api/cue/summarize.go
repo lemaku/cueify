@@ -21,7 +21,7 @@ const schemaString = `
 
 #universities: {
 	tuwien: {
-		name: "Vienna University of Technology" | "WU Wien",
+		name: "Vienna University of Technology" | "University of Vienna",
 		students: [...#student]
 	},
 	countryCode: string

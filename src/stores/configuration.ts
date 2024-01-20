@@ -10,17 +10,17 @@ export type Format = (typeof supportedFormats)[number]
 export const useConfigurationStore = defineStore({
   id: 'configuration',
   state: () => ({
-    rawPath: ['universities', 'tuwien', 'students', '0'],
+    rawPath: [] as string[],
     rawCurrent: {
       universities: {
         tuwien: {
           name: 'Vienna University of Technology',
           students: [
             {
-              matNr: '12119877'
-              // name: 'Leon K',
-              // semester: 5,
-              // active: true
+              matNr: '12119877',
+              name: 'Leon K',
+              semester: 5,
+              active: true
             }
           ]
         }
@@ -62,7 +62,7 @@ export const useConfigurationStore = defineStore({
       return state.rawFormat
     },
     get: (state) => {
-      return (path: string) => {
+      return (path: string[]) => {
         let obj = state.rawCurrent
         let i = 0
         for (i = 0; i < path.length - 1; i++) {
@@ -74,7 +74,6 @@ export const useConfigurationStore = defineStore({
   },
   actions: {
     async jumpTo(path: string[]) {
-      console.log(path);
       if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
         const result = await inspect(path, this.rawCurrent)
         if (result.type != 'complex' && result.type != 'list') {
@@ -94,10 +93,26 @@ export const useConfigurationStore = defineStore({
 
       if (res.valid) {
         this.rawCurrent = newCurrent
-        this.summarize()
+        await this.summarize()
       }
 
       return res
+    },
+    async unset(path: string[]) {
+      if (this.get(path) !== undefined) {
+        this.rawCurrent = unsetValue(path, this.rawCurrent)
+        this.summarize()
+        this.rawFields = (await inspect(this.rawPath, this.rawCurrent)).properties
+      }
+    },
+    async setToEmpty(path: string[], isArray = false) {
+      this.rawCurrent = setValue(path, isArray ? [] : {}, this.rawCurrent)
+      await this.summarize()
+    },
+    async addToArray() {
+      this.rawCurrent = pushToArray(this.rawPath, this.rawCurrent)
+      this.summarize()
+      this.rawFields = (await inspect(this.rawPath, this.rawCurrent)).properties
     },
     async summarize() {
       const result = await summarize(this.rawCurrent)
@@ -118,5 +133,41 @@ function setValue(path: string[], value: any, object: any): any {
   }
 
   obj[path[i]] = value
+  return ref
+}
+
+function unsetValue(path: string[], object: any): any {
+  const ref = cloneDeep(object ?? {})
+  let obj = ref
+  let i = 0
+
+  for (i = 0; i < path.length - 1; i++) {
+    obj = obj[path[i]]
+  }
+
+  if (Array.isArray(obj)) {
+    obj.splice(path[i] as unknown as number, 1)
+  } else {
+    delete obj[path[i]]
+  }
+
+  return ref
+}
+
+function pushToArray(path: string[], object: any): any {
+  const ref = cloneDeep(object ?? {})
+  let obj = ref
+  let i = 0
+
+  for (i = 0; i < path.length; i++) {
+    obj = obj[path[i]]
+  }
+
+  console.log(Array.isArray(obj))
+
+  if (Array.isArray(obj)) {
+    obj.push({})
+  }
+
   return ref
 }

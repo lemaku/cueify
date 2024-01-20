@@ -58,6 +58,6 @@ const compiled = computed(() => {
 
 <style>
 code.hljs {
-  border-radius: 10px;
+  border-radius: .4rem;
 }
 </style>
