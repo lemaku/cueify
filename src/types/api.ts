@@ -1,4 +1,4 @@
-import type { CurrentType, Field, Path, ValueError } from "./app"
+import type { CurrentType, Field, Path, ValueError } from './app'
 
 export type ValidationResult = {
   valid: boolean
@@ -25,6 +25,7 @@ export type SummarizeBody = {
 }
 
 export type SummarizeResult = {
+  value: any
   valid: boolean
   errors: ValueError[]
 }

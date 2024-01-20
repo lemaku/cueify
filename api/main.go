@@ -10,7 +10,7 @@ func main() {
 	//fmt.Println(cue.Inspect([]string{"universities"}, cue.MissingPropVal))
 	//fmt.Println(success)
 	//fmt.Println(errors)
-	//fmt.Println(cue.Summarize(cue.MissingPropVal))
+	//fmt.Println(cue.Summarize(cue.CorrectVal).Value)
 
 	http.RunServer("localhost:8080")
 }
