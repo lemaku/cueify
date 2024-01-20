@@ -20,12 +20,11 @@ import { watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 
 const configuration = useConfigurationStore()
-const { jumpTo } = configuration
+const { jumpTo, summarize } = configuration
 
-jumpTo((router.currentRoute.value.query.p ?? 'universities').toString().split('.'))
-configuration.summarize()
+summarize()
 
-watch(router.currentRoute, () => {
+watch(router.currentRoute, async () => {
   const path = (router.currentRoute.value.query.p ?? 'universities').toString()
   jumpTo(path.split('.'))
 })

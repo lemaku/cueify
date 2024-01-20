@@ -1,6 +1,7 @@
 <template>
   <ComplexForm v-if="currentType == 'complex'" />
-  <ListForm v-if="currentType == 'list'" />
+  <ListForm v-else-if="currentType == 'list'" />
+  <div v-else>Error</div>
 </template>
 
 <script setup lang="ts">

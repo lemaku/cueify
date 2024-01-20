@@ -3,7 +3,6 @@ package cue
 import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
-	"fmt"
 	"regexp"
 )
 
@@ -38,7 +37,6 @@ func Inspect(path []string, json string) InspectionResult {
 	value = value.LookupPath(toCuePath(path))
 
 	var iter *cue.Iterator
-	fmt.Println(value.Kind())
 	if value.IncompleteKind() == cue.StructKind {
 		iter, _ = value.Fields()
 	} else if value.IncompleteKind() == cue.ListKind {

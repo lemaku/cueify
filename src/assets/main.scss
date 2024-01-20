@@ -55,3 +55,26 @@ input:not(.input-error):not(.input-success):focus  {
 .input-success:focus {
   border-color: var(--vt-c-success);
 }
+
+.icon-20 {
+  width: 20px;
+  color: var(--color-text);
+}
+
+.icon-button {
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 50%;
+  cursor: auto;
+}

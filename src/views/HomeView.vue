@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <BreadCrumb class="breadcrumb"></BreadCrumb>
-    <DynamicFormContainer class="form-container"></DynamicFormContainer>
+    <DynamicFormContainer class="form"></DynamicFormContainer>
 
     <FormatSelector class="format"></FormatSelector>
     <CodeSnippet class="current"></CodeSnippet>
@@ -36,7 +36,7 @@ import Errors from '@/components/Errors.vue'
   grid-column: 2;
 }
 
-.form-container {
+.form {
   grid-row: 2;
   grid-column: 1;
 }
