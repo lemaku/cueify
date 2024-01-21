@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "build-api": "GOOS=js GOARCH=wasm go build -o main.wasm api/main.go",
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
@@ -21,6 +22,7 @@
     "marked-highlight": "^2.0.6",
     "pinia": "^2.1.7",
     "vue": "^3.3.4",
+    "vue-loading-overlay": "^6.0.3",
     "vue-router": "^4.2.5",
     "yaml": "^2.3.4"
   },

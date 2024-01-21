@@ -11,11 +11,11 @@
 </template>
 
 <script setup lang="ts">
-import DynamicFormContainer from '@/components/DynamicFormContainer.vue'
-import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
 import BreadCrumb from '@/components/BreadCrumb.vue'
-import FormatSelector from '@/components/FormatSelector.vue'
+import DynamicFormContainer from '@/components/DynamicFormContainer.vue'
 import Errors from '@/components/Errors.vue'
+import FormatSelector from '@/components/FormatSelector.vue'
+import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
 </script>
 
 <style>

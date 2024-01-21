@@ -1,8 +1,9 @@
-import { defineStore } from 'pinia'
-import { inspect, summarize, validate } from '@/services/rest'
-import { cloneDeep } from 'lodash'
-import type { Field, CurrentType, ValueError, Path, BreadCrumb } from '@/types/app'
 import router from '@/router'
+import '@/types/app.d.ts'
+import type { MutexInterface } from 'async-mutex'
+import { Mutex } from 'async-mutex'
+import { cloneDeep } from 'lodash'
+import { defineStore } from 'pinia'
 
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
@@ -18,7 +19,7 @@ export const useConfigurationStore = defineStore({
           students: [
             {
               matNr: '12119877',
-              name: 'Leon K',
+              name: 'Leon K'
             }
           ]
         }
@@ -27,7 +28,8 @@ export const useConfigurationStore = defineStore({
     rawCurrentType: 'complex' as CurrentType,
     rawFields: [] as Field[],
     rawFormat: 'json' as Format,
-    rawErrors: [] as ValueError[]
+    rawErrors: [] as ValueError[],
+    lock: new Mutex() as MutexInterface
   }),
   getters: {
     fields: (state): Field[] => {
@@ -44,6 +46,9 @@ export const useConfigurationStore = defineStore({
     },
     errors: (state): ValueError[] => {
       return state.rawErrors
+    },
+    isLoading: (state): boolean => {
+      return state.lock.isLocked()
     },
     breadcrumbs: (state): BreadCrumb[] => {
       const resultArray = []
@@ -66,14 +71,15 @@ export const useConfigurationStore = defineStore({
         for (i = 0; i < path.length - 1; i++) {
           obj = obj[path[i]]
         }
-        return obj[path[i]];
+        return obj[path[i]]
       }
     }
   },
   actions: {
     async jumpTo(path: string[]) {
       if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
-        const result = await inspect(path, this.rawCurrent)
+        const result = window.WasmAPI.Inspect(path, this.rawCurrent)
+
         if (result.type != 'complex' && result.type != 'list') {
           const parent = path.slice(0, path.length - 1)
           const next = parent.length <= 0 ? ['universities'] : parent
@@ -86,34 +92,41 @@ export const useConfigurationStore = defineStore({
       }
     },
     async set(path: string[], value: any) {
-      const newCurrent = setValue(path, value, this.rawCurrent)
-      const res = await validate(path, newCurrent)
+      await this.lock.acquire()
+      const newRaw = setValue(path, value, this.rawCurrent)
+      const res = window.WasmAPI.Validate(path, newRaw)
 
       if (res.valid) {
-        this.rawCurrent = newCurrent
-        await this.summarize()
+        await this.summarize(newRaw)
       }
 
+      this.lock.release()
       return res
     },
     async unset(path: string[]) {
+      await this.lock.acquire()
       if (this.get(path) !== undefined) {
-        this.rawCurrent = unsetValue(path, this.rawCurrent)
-        this.summarize()
-        this.rawFields = (await inspect(this.rawPath, this.rawCurrent)).properties
+        const newRaw = unsetValue(path, this.rawCurrent)
+        await this.summarize(newRaw)
+        this.rawFields = window.WasmAPI.Inspect(this.rawPath, this.rawCurrent).properties
       }
+      this.lock.release()
     },
     async setToEmpty(path: string[], isArray = false) {
-      this.rawCurrent = setValue(path, isArray ? [] : {}, this.rawCurrent)
-      await this.summarize()
+      await this.lock.acquire()
+      const newRaw = setValue(path, isArray ? [] : {}, this.rawCurrent)
+      await this.summarize(newRaw)
+      this.lock.release()
     },
     async addToArray() {
-      this.rawCurrent = pushToArray(this.rawPath, this.rawCurrent)
-      this.summarize()
-      this.rawFields = (await inspect(this.rawPath, this.rawCurrent)).properties
+      await this.lock.acquire()
+      const newRaw = pushToArray(this.rawPath, this.rawCurrent)
+      this.summarize(newRaw)
+      this.rawFields = window.WasmAPI.Inspect(this.rawPath, this.rawCurrent).properties
+      this.lock.release()
     },
-    async summarize() {
-      const result = await summarize(this.rawCurrent)
+    async summarize(raw: any) {
+      const result = window.WasmAPI.Summarize(raw)
       this.rawErrors = result.errors
       this.rawCurrent = result.value
     },
