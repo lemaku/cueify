@@ -9,10 +9,15 @@ import (
 )
 
 type ValidationError struct {
-	Errors []string
+	Errors []string `json:"errors"`
 }
 
-func Validate(path []string, json string) (bool, *ValidationError) {
+type ValidationResult struct {
+	Valid  bool     `json:"valid"`
+	Errors []string `json:"errors"`
+}
+
+func Validate(path []string, json string) ValidationResult {
 	json = "universities: #universities\n\n" + json
 
 	context := cuecontext.New()
@@ -42,9 +47,9 @@ func Validate(path []string, json string) (bool, *ValidationError) {
 		}
 
 		if len(validationErrors) > 0 {
-			return false, &ValidationError{validationErrors}
+			return ValidationResult{Valid: false, Errors: validationErrors}
 		}
 	}
 
-	return true, nil
+	return ValidationResult{Valid: true, Errors: nil}
 }

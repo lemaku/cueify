@@ -8,7 +8,14 @@
     </div>
   </header>
 
-  <div class="main">
+  <loading
+    v-if="!wasmInitialized"
+    :active="true"
+    :is-full-page="true"
+    :loader="'dots'"
+    :color="'#4a86e8'"
+  ></loading>
+  <div v-else class="main">
     <RouterView />
   </div>
 </template>
@@ -16,17 +23,30 @@
 <script setup lang="ts">
 import router from '@/router'
 import { useConfigurationStore } from '@/stores/configuration'
+import { useGlobalStore } from '@/stores/global'
+import { storeToRefs } from 'pinia'
 import { watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import Loading from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/css/index.css'
 
 const configuration = useConfigurationStore()
-const { jumpTo, summarize } = configuration
+const { jumpTo, summarize, current } = configuration
 
-summarize()
+const global = useGlobalStore();
+const { wasmInitialized } = storeToRefs(global)
 
-watch(router.currentRoute, async () => {
-  const path = (router.currentRoute.value.query.p ?? 'universities').toString()
-  jumpTo(path.split('.'))
+const unwatch = watch(wasmInitialized, (value) => {
+  if (value === true) {
+    summarize(current)
+    const path = (router.currentRoute.value.query.p ?? 'universities').toString()
+    jumpTo(path.split('.'))
+    watch(router.currentRoute, async () => {
+      const path = (router.currentRoute.value.query.p ?? 'universities').toString()
+      jumpTo(path.split('.'))
+    })
+    unwatch()
+  }
 })
 </script>
 

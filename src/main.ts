@@ -1,14 +1,27 @@
 import './assets/main.scss'
 
-import { createApp } from 'vue'
+import { WasmAPIStub } from './loadWasm/wasm_api'
+import './loadWasm/wasm_exec.d.ts'
+import './loadWasm/wasm_exec.js'
+
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from './router'
 
-const app = createApp(App)
+import { useGlobalStore } from './stores/global'
 
+const app = createApp(App)
 app.use(createPinia())
 app.use(router)
+
+window.WasmAPI = new WasmAPIStub()
+const go = new Go()
+const sourceFile = 'main.wasm'
+WebAssembly.instantiateStreaming(fetch(sourceFile), go.importObject).then((result) => {
+  go.run(result.instance)
+  useGlobalStore().setWasmInitialized()
+})
 
 app.mount('#app')
