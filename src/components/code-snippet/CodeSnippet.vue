@@ -1,63 +1,39 @@
 <template>
-  <div v-html="compiled" class="markdown" />
+  <codemirror
+    v-model="code"
+    class="editor"
+    placeholder="CUE definition goes here..."
+    :autofocus="false"
+    :indent-with-tab="true"
+    :tab-size="2"
+    :extensions="extensions"
+    :disabled="true"
+    :style="{ width: '100%' }"
+  />
 </template>
 
 <script setup lang="ts">
-import hljs from 'highlight.js/lib/core'
-import jsonHighlight from 'highlight.js/lib/languages/json'
-import textHightlight from 'highlight.js/lib/languages/plaintext'
-import yamlHighlight from 'highlight.js/lib/languages/yaml'
-import 'highlight.js/styles/github.css'
-import { Marked } from 'marked'
-import { markedHighlight } from 'marked-highlight'
-import { stringify } from 'yaml'
 import { useConfigurationStore } from '@/stores/configuration'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
-
-hljs.registerLanguage('json', jsonHighlight)
-hljs.registerLanguage('plaintext', textHightlight)
-hljs.registerLanguage('yaml', yamlHighlight)
+import { stringify } from 'yaml'
+import { Codemirror } from 'vue-codemirror'
+import { customTheme } from './editor-theme'
 
 const props = defineProps(['path', 'depth'])
 
 const configuration = useConfigurationStore()
 const { get, current } = storeToRefs(configuration)
 
-const marked = new Marked(
-  markedHighlight({
-    langPrefix: 'hljs language-',
-    highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-      return hljs.highlight(code, { language }).value
-    }
-  })
-)
+const extensions = [customTheme]
 
-const compiled = computed(() => {
-  let snippet = ''
-
+const code = computed(() => {
   const code = props.path ? get.value(props.path) : current.value
-
   switch (configuration.format) {
-    case 'json':
-      snippet = JSON.stringify(code, null, 2)
-      break
     case 'yaml':
-      snippet = stringify(code)
-      break
+      return stringify(code)
     default:
-      snippet = JSON.stringify(code, null, 2)
-      break
+      return JSON.stringify(code, null, 2)
   }
-
-  //TODO inject a copy button into code html
-  return marked.parse('```' + configuration.format + '\n' + snippet + '\n```')
 })
 </script>
-
-<style>
-code.hljs {
-  border-radius: .4rem;
-}
-</style>

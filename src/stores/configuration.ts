@@ -8,9 +8,31 @@ import { defineStore } from 'pinia'
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
 
+const uniSchema = `
+#student: {
+  matNr:  string & =~"^[0-9]{8}$"
+  name:   string
+  active: *true | bool
+    if active {
+        semester: int
+    }
+}
+
+#universities: {
+  tuwien: {
+    name: "Vienna University of Technology" | "University of Vienna",
+    students: [...#student]
+  },
+  countryCode: string
+}
+
+#export: #universities
+`
+
 export const useConfigurationStore = defineStore({
   id: 'configuration',
   state: () => ({
+    rawSchema: undefined as string | undefined,
     rawPath: [] as string[],
     rawCurrent: {
       universities: {
@@ -32,6 +54,9 @@ export const useConfigurationStore = defineStore({
     lock: new Mutex() as MutexInterface
   }),
   getters: {
+    schemaSet: (state): boolean => {
+      return state.rawSchema !== undefined
+    },
     fields: (state): Field[] => {
       return state.rawFields
     },
@@ -76,6 +101,11 @@ export const useConfigurationStore = defineStore({
     }
   },
   actions: {
+    setSchema(schema: string) {
+      // TODO: do checks like that #export is defined
+
+      this.rawSchema = schema
+    },
     async jumpTo(path: string[]) {
       if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
         const result = window.WasmAPI.Inspect(path, this.rawCurrent)

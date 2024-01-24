@@ -1,6 +1,6 @@
 <template>
   <div class="errors-container" v-if="(errors ?? []).length > 0">
-    <p class="errors-header">Problems</p>
+    <p class="errors-header">Resolve next</p>
     <template v-for="error in errors" v-bind:key="error.path.join('.')">
       <router-link :to="{ query: { p: error.path.join('.') } }">{{
         error.path.join('.')
@@ -38,7 +38,7 @@ const errors = computed(() => {
 }
 .errors-header {
   grid-column: 1 / span 2;
-  color: var(--vt-c-error);
+  color: var(--vt-c-grey);
   font-size: 1rem;
   font-weight: bold;
 }

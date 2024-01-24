@@ -6,8 +6,8 @@
           {{ content }}</router-link
         >
         <button class="icon-button" @click="collapsed = !collapsed">
-          <ChevronRightIcon class="icon-20" v-if="collapsed" />
-          <ChevronDownIcon class="icon-20" v-if="!collapsed" />
+          <i class="pi pi-chevron-right" style="font-size: 0.9rem;" v-if="collapsed"></i>
+          <i class="pi pi-chevron-down" style="font-size: 0.9rem;" v-if="!collapsed"></i>
         </button>
       </div>
       <div v-if="!collapsed && !isUndefined">
@@ -15,11 +15,11 @@
       </div>
     </div>
     <button class="icon-button button-preview" @click="unset(path)">
-      <TrashIcon class="icon-20" />
+      <i class="pi pi-trash"></i>
     </button>
   </div>
   <button v-else class="icon-button button-preview" @click="setToEmpty(path, isArray)">
-    <PlusIcon class="icon-20" />
+    <i class="pi pi-plus-circle"></i>
   </button>
 </template>
 
@@ -27,7 +27,6 @@
 import { ref, computed } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
 import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
-import { ChevronRightIcon, ChevronDownIcon, TrashIcon, PlusIcon } from '@heroicons/vue/20/solid'
 
 const props = defineProps(['path'])
 const configuration = useConfigurationStore()

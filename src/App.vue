@@ -70,7 +70,7 @@ nav {
 
 nav a {
   padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-text);
 }
 
 nav a:first-of-type {

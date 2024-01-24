@@ -2,7 +2,7 @@
   <div class="list-container">
     <Preview v-for="field in fields" :key="field.path.join('.')" :path="field.path"></Preview>
     <button class="icon-button" @click="addToArray()">
-      <PlusIcon class="icon-20" />
+      <i class="pi pi-plus-circle"></i>
     </button>
   </div>
 </template>
@@ -11,7 +11,6 @@
 import { useConfigurationStore } from '@/stores/configuration'
 import Preview from '@/components/fields/Preview.vue'
 import { storeToRefs } from 'pinia'
-import { PlusIcon } from '@heroicons/vue/20/solid'
 
 const configuration = useConfigurationStore()
 

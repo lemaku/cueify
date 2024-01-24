@@ -11,7 +11,7 @@
       @focusout="onFocusOut()"
     />
     <button class="icon-button" :disabled="isUndefined" @click="onClear()">
-      <TrashIcon class="icon-20" />
+      <i class="pi pi-eraser"></i>
     </button>
     <div class="error" v-if="errors">
       <template v-for="(err, i) in errors" :key="i">
@@ -24,7 +24,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
-import { TrashIcon } from '@heroicons/vue/20/solid'
 import { debounce } from 'lodash'
 
 const props = defineProps(['path', 'type', 'placeholder'])
