@@ -8,45 +8,12 @@ import { defineStore } from 'pinia'
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
 
-const uniSchema = `
-#student: {
-  matNr:  string & =~"^[0-9]{8}$"
-  name:   string
-  active: *true | bool
-    if active {
-        semester: int
-    }
-}
-
-#universities: {
-  tuwien: {
-    name: "Vienna University of Technology" | "University of Vienna",
-    students: [...#student]
-  },
-  countryCode: string
-}
-
-#export: #universities
-`
-
 export const useConfigurationStore = defineStore({
   id: 'configuration',
   state: () => ({
-    rawSchema: undefined as string | undefined,
+    rawSchema: '' as string,
     rawPath: [] as string[],
-    rawCurrent: {
-      universities: {
-        tuwien: {
-          name: 'Vienna University of Technology',
-          students: [
-            {
-              matNr: '12119877',
-              name: 'Leon K'
-            }
-          ]
-        }
-      }
-    } as any,
+    rawCurrent: {} as any,
     rawCurrentType: 'complex' as CurrentType,
     rawFields: [] as Field[],
     rawFormat: 'json' as Format,
@@ -55,7 +22,7 @@ export const useConfigurationStore = defineStore({
   }),
   getters: {
     schemaSet: (state): boolean => {
-      return state.rawSchema !== undefined
+      return state.rawSchema ? true : false
     },
     fields: (state): Field[] => {
       return state.rawFields
@@ -76,8 +43,8 @@ export const useConfigurationStore = defineStore({
       return state.lock.isLocked()
     },
     breadcrumbs: (state): BreadCrumb[] => {
-      const resultArray = []
-      const path = []
+      const path: string[] = []
+      const resultArray: BreadCrumb[] = [{ crumb: '~', path: [] }]
 
       for (const crumb of state.rawPath) {
         path.push(crumb)
@@ -102,32 +69,42 @@ export const useConfigurationStore = defineStore({
   },
   actions: {
     setSchema(schema: string) {
-      // TODO: do checks like that #export is defined
+      const res = window.WasmAPI.ValidateSchema(schema)
 
-      this.rawSchema = schema
-    },
-    async jumpTo(path: string[]) {
-      if (path && JSON.stringify(path) != JSON.stringify(this.path)) {
-        const result = window.WasmAPI.Inspect(path, this.rawCurrent)
+      if (res.valid) {
+        this.rawSchema = schema
 
-        if (result.type != 'complex' && result.type != 'list') {
-          const parent = path.slice(0, path.length - 1)
-          const next = parent.length <= 0 ? ['universities'] : parent
-          router.push({ query: { p: next.join('.') } })
-        } else {
-          this.rawPath = path
-          this.rawCurrentType = result.type
-          this.rawFields = result.properties
-        }
+        // TODO reevalute this:
+        this.rawCurrent = {}
+
+        this.summarize(this.rawCurrent)
+        this.jumpTo([])
       }
+      return res
+    },
+    jumpTo(path: string[]) {
+      const result = window.WasmAPI.Inspect(path, this.rawCurrent, this.rawSchema)
+
+      if (result.type != 'complex' && result.type != 'list') {
+        this.jumpTo(path.slice(0, path.length - 1))
+        setTimeout(() => this.focus(path), 25);
+      } else {
+        this.rawPath = path
+        this.rawCurrentType = result.type
+        this.rawFields = result.properties
+      }
+    },
+    // Fix this as it should just be an event triggered
+    focus(path: string[]) {
+
     },
     async set(path: string[], value: any) {
       await this.lock.acquire()
       const newRaw = setValue(path, value, this.rawCurrent)
-      const res = window.WasmAPI.Validate(path, newRaw)
+      const res = window.WasmAPI.Validate(path, newRaw, this.rawSchema)
 
       if (res.valid) {
-        await this.summarize(newRaw)
+        this.summarize(newRaw)
       }
 
       this.lock.release()
@@ -137,26 +114,34 @@ export const useConfigurationStore = defineStore({
       await this.lock.acquire()
       if (this.get(path) !== undefined) {
         const newRaw = unsetValue(path, this.rawCurrent)
-        await this.summarize(newRaw)
-        this.rawFields = window.WasmAPI.Inspect(this.rawPath, this.rawCurrent).properties
+        this.summarize(newRaw)
+        this.rawFields = window.WasmAPI.Inspect(
+          this.rawPath,
+          this.rawCurrent,
+          this.rawSchema
+        ).properties
       }
       this.lock.release()
     },
     async setToEmpty(path: string[], isArray = false) {
       await this.lock.acquire()
       const newRaw = setValue(path, isArray ? [] : {}, this.rawCurrent)
-      await this.summarize(newRaw)
+      this.summarize(newRaw)
       this.lock.release()
     },
     async addToArray() {
       await this.lock.acquire()
       const newRaw = pushToArray(this.rawPath, this.rawCurrent)
       this.summarize(newRaw)
-      this.rawFields = window.WasmAPI.Inspect(this.rawPath, this.rawCurrent).properties
+      this.rawFields = window.WasmAPI.Inspect(
+        this.rawPath,
+        this.rawCurrent,
+        this.rawSchema
+      ).properties
       this.lock.release()
     },
-    async summarize(raw: any) {
-      const result = window.WasmAPI.Summarize(raw)
+    summarize(raw: any) {
+      const result = window.WasmAPI.Summarize(raw, this.rawSchema)
       this.rawErrors = result.errors
       this.rawCurrent = result.value
     },
@@ -204,8 +189,6 @@ function pushToArray(path: string[], object: any): any {
   for (i = 0; i < path.length; i++) {
     obj = obj[path[i]]
   }
-
-  console.log(Array.isArray(obj))
 
   if (Array.isArray(obj)) {
     obj.push({})

@@ -5,12 +5,14 @@ declare class Go {
 }
 
 declare interface WasmAPI {
-  Validate: (path: Path, payload: any) => { valid: boolean; errors: string[] }
-  Inspect: (path: Path, payload: any) => { type: CurrentType; properties: Field[] }
-  Summarize: (payload: any) => { value: any; valid: boolean; errors: ValueError[] }
-  _validate: (path: Path, json: string) => string
-  _inspect: (path: Path, json: string) => string
-  _summarize: (json: string) => string
+  Validate: (path: Path, payload: any, schema: string) => { valid: boolean; errors: string[] }
+  ValidateSchema: (payload: any) => { valid: boolean; error: string }
+  Inspect: (path: Path, payload: any, schema: string) => { type: CurrentType; properties: Field[] }
+  Summarize: (payload: any, schema: string) => { value: any; valid: boolean; errors: ValueError[] }
+  _validate: (path: Path, json: string, schema: string) => string
+  _validateSchema: (raw: string) => string
+  _inspect: (path: Path, json: string, schema: string) => string
+  _summarize: (json: string, schema: string) => string
 }
 
 declare interface Window {

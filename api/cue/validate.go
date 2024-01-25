@@ -17,11 +17,11 @@ type ValidationResult struct {
 	Errors []string `json:"errors"`
 }
 
-func Validate(path []string, json string) ValidationResult {
-	json = "universities: #universities\n\n" + json
+func Validate(path []string, json string, raw string) ValidationResult {
+	json = "#export & " + json
 
 	context := cuecontext.New()
-	schema := context.CompileString(schemaString)
+	schema := context.CompileString(raw)
 
 	value := context.CompileString(json, cue.Scope(schema))
 

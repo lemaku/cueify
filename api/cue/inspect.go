@@ -27,11 +27,11 @@ const (
 	Complex Kind = "complex"
 )
 
-func Inspect(path []string, json string) InspectionResult {
-	json = "universities: #universities\n\n" + json
+func Inspect(path []string, json string, raw string) InspectionResult {
+	json = "#export & " + json
 
 	context := cuecontext.New()
-	schema := context.CompileString(schemaString)
+	schema := context.CompileString(raw)
 
 	value := context.CompileString(json, cue.Scope(schema))
 	value = value.LookupPath(toCuePath(path))

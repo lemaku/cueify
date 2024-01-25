@@ -2,9 +2,7 @@
   <div class="preview-container" v-if="!isUndefined">
     <div class="preview">
       <div class="inner">
-        <router-link class="link" :to="{ query: { p: props.path.join('.') } }">
-          {{ content }}</router-link
-        >
+        <a class="link" @click="jumpTo(props.path)">{{ content }}</a>
         <button class="icon-button" @click="collapsed = !collapsed">
           <i class="pi pi-chevron-right" style="font-size: 0.9rem;" v-if="collapsed"></i>
           <i class="pi pi-chevron-down" style="font-size: 0.9rem;" v-if="!collapsed"></i>
@@ -31,7 +29,7 @@ import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
 const props = defineProps(['path'])
 const configuration = useConfigurationStore()
 
-const { unset, get, setToEmpty, fields } = configuration
+const { unset, get, setToEmpty, fields, jumpTo } = configuration
 
 const isArray = fields.find((f) => f.path === props.path)?.type === 'list'
 

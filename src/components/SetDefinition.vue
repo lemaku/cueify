@@ -16,6 +16,7 @@
       :extensions="extensions"
       :style="{ width: '100%' }"
     />
+    <div v-if="error" class="error">Error: {{ error }}</div>
     <button class="next" @click="onClick()">Next</button>
   </div>
 </template>
@@ -49,9 +50,13 @@ const code = ref(`#student: {
 
 #export: #universities`)
 const extensions = [customTheme]
+const error = ref(undefined as string | undefined);
 
 const onClick = () => {
-  setSchema(code.value)
+  const res = setSchema(code.value);
+  if (!res.valid) {
+    error.value = res.error;
+  }
 }
 </script>
 
@@ -64,8 +69,10 @@ const onClick = () => {
 .editor {
   align-self: center;
 }
-
 .next {
   align-self: flex-end;
+}
+.error {
+  color: var(--vt-c-error);
 }
 </style>

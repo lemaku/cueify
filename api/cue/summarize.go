@@ -20,11 +20,11 @@ type SummarizeResult struct {
 	Errors []Error     `json:"errors"`
 }
 
-func Summarize(json string) SummarizeResult {
-	json = "universities: #universities\n\n" + json
+func Summarize(json string, raw string) SummarizeResult {
+	json = "#export & " + json
 
 	context := cuecontext.New()
-	schema := context.CompileString(schemaString)
+	schema := context.CompileString(raw)
 
 	value := context.CompileString(json, cue.Scope(schema))
 
@@ -79,7 +79,7 @@ func partialExport(value cue.Value) map[string]interface{} {
 			} else if property.IncompleteKind() == cue.ListKind {
 				list, _ := property.List()
 
-				var arr []interface{}
+				var arr = make([]interface{}, 0)
 
 				for list.Next() {
 					listElement := list.Value()

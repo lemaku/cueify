@@ -21,33 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router'
-import { useConfigurationStore } from '@/stores/configuration'
 import { useGlobalStore } from '@/stores/global'
 import { storeToRefs } from 'pinia'
-import { watch } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
-
-const configuration = useConfigurationStore()
-const { jumpTo, summarize, current } = configuration
+import { RouterLink, RouterView } from 'vue-router'
 
 const global = useGlobalStore();
 const { wasmInitialized } = storeToRefs(global)
-
-const unwatch = watch(wasmInitialized, (value) => {
-  if (value === true) {
-    summarize(current)
-    const path = (router.currentRoute.value.query.p ?? 'universities').toString()
-    jumpTo(path.split('.'))
-    watch(router.currentRoute, async () => {
-      const path = (router.currentRoute.value.query.p ?? 'universities').toString()
-      jumpTo(path.split('.'))
-    })
-    unwatch()
-  }
-})
 </script>
 
 <style scoped>

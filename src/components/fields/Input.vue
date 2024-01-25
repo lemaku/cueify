@@ -6,6 +6,7 @@
       :type="type"
       v-model="curVal"
       :step="step"
+      ref="input"
       @change="onChange()"
       @focus="onFocus()"
       @focusout="onFocusOut()"
@@ -22,9 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
-import { debounce } from 'lodash'
+import { debounce, isArray, isEqual } from 'lodash'
 
 const props = defineProps(['path', 'type', 'placeholder'])
 const configuration = useConfigurationStore()
@@ -83,9 +84,19 @@ const step = computed(() => {
   }
   return 1
 })
+
+// Use ref to be able to set the focus to the input field
+const input = ref();
+onMounted(() => {
+  configuration.$onAction(({ name, args }) => {
+    if (name === 'focus' && args && isArray(args[0]) && isEqual(args[0], props.path)) {
+      input.value.focus()
+    }
+  })
+})
 </script>
 
-<style>
+<style scoped>
 .form-input {
   display: grid;
   grid-template-columns: minmax(80%, 100%) auto;
