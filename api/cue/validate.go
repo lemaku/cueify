@@ -51,5 +51,5 @@ func Validate(path []string, json string, raw string) ValidationResult {
 		}
 	}
 
-	return ValidationResult{Valid: true, Errors: nil}
+	return ValidationResult{Valid: true, Errors: make([]string, 0)}
 }

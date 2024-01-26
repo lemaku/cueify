@@ -3,28 +3,34 @@ package cue
 import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
+	"fmt"
 	"regexp"
+	"slices"
 )
 
 type Property struct {
 	Path  []string `json:"path"`
-	Type  Kind     `json:"type"`
+	Type  []Kind   `json:"type"`
 	Index int      `json:"index"`
 }
 
 type InspectionResult struct {
-	Type       Kind       `json:"type"`
+	Type       []Kind     `json:"type"`
 	Properties []Property `json:"properties"`
 }
 
 type Kind string
 
 const (
+	Bottom  Kind = "bottom"
+	Null    Kind = "null"
 	String  Kind = "string"
+	Bytes   Kind = "bytes"
 	Number  Kind = "number"
 	Bool    Kind = "bool"
 	List    Kind = "list"
 	Complex Kind = "complex"
+	Any     Kind = "any"
 )
 
 func Inspect(path []string, json string, raw string) InspectionResult {
@@ -43,7 +49,7 @@ func Inspect(path []string, json string, raw string) InspectionResult {
 		tmp, _ := value.List()
 		iter = &tmp
 	} else {
-		return InspectionResult{}
+		return InspectionResult{Type: getKind(value), Properties: make([]Property, 0)}
 	}
 	var properties []Property
 
@@ -55,21 +61,32 @@ func Inspect(path []string, json string, raw string) InspectionResult {
 	return InspectionResult{Type: getKind(value), Properties: properties}
 }
 
-func getKind(value cue.Value) Kind {
-	switch value.IncompleteKind() {
-	case cue.StringKind:
-		return String
-	case cue.BoolKind:
-		return Bool
-	case cue.IntKind:
-		return Number
-	case cue.ListKind:
-		return List
-	case cue.StructKind:
-		return Complex
-	default:
-		panic("Not implemented")
+func checkKind(value cue.Value, cueKind cue.Kind, cueifyKind Kind, collection []Kind) []Kind {
+	if value.IncompleteKind().IsAnyOf(cueKind) || value.IncompleteKind() == cueKind {
+		return append(collection, cueifyKind)
 	}
+	return collection
+}
+
+func getKind(value cue.Value) []Kind {
+	var kind []Kind
+	kind = checkKind(value, cue.BottomKind, Bottom, kind)
+	kind = checkKind(value, cue.NullKind, Null, kind)
+	kind = checkKind(value, cue.BoolKind, Bool, kind)
+	kind = checkKind(value, cue.IntKind, Number, kind)
+	kind = checkKind(value, cue.FloatKind, Number, kind)
+	kind = checkKind(value, cue.StringKind, String, kind)
+	kind = checkKind(value, cue.BytesKind, Bytes, kind)
+	kind = checkKind(value, cue.ListKind, List, kind)
+	kind = checkKind(value, cue.StructKind, Complex, kind)
+
+	if len(kind) == 0 {
+		panic(fmt.Errorf("Kind %v not implemented", value.IncompleteKind().TypeString()))
+
+	}
+
+	// This only removes consecutive equal copies => number, number need to be right after each other!
+	return slices.Compact(kind)
 }
 
 func toStringPath(path cue.Path) []string {

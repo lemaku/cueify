@@ -87,6 +87,7 @@ export const useConfigurationStore = defineStore({
 
       if (result.type != 'complex' && result.type != 'list') {
         this.jumpTo(path.slice(0, path.length - 1))
+        // Give components time to be rendered and then trigger focus event
         setTimeout(() => this.focus(path), 25);
       } else {
         this.rawPath = path
@@ -96,7 +97,6 @@ export const useConfigurationStore = defineStore({
     },
     // Fix this as it should just be an event triggered
     focus(path: string[]) {
-
     },
     async set(path: string[], value: any) {
       await this.lock.acquire()

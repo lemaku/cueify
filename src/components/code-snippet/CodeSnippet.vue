@@ -18,14 +18,14 @@ import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { stringify } from 'yaml'
 import { Codemirror } from 'vue-codemirror'
-import { customTheme } from './editor-theme'
+import { readOnlyTheme } from './editor-theme'
 
 const props = defineProps(['path', 'depth'])
 
 const configuration = useConfigurationStore()
 const { get, current } = storeToRefs(configuration)
 
-const extensions = [customTheme]
+const extensions = [readOnlyTheme]
 
 const code = computed(() => {
   const code = props.path ? get.value(props.path) : current.value

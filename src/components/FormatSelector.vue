@@ -29,5 +29,10 @@ const { changeFormat } = configuration
 
 select {
   width: fit-content;
+  color: var(--color-text);
+  background-color: transparent;
+  border: 1px solid var(--vt-c-accent);
+  border-radius: 0.5rem;
+  padding: 0.1rem 0.1rem 0.1rem 0.5rem;
 }
 </style>

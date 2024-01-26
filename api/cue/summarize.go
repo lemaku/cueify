@@ -58,7 +58,7 @@ func partialExport(value cue.Value) map[string]interface{} {
 
 	switch value.IncompleteKind() {
 	case cue.StructKind:
-		s, _ := value.Fields(defaultOptions...)
+		s, _ := value.Fields()
 
 		for s.Next() {
 			property := s.Value()

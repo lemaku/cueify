@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Codemirror } from 'vue-codemirror'
-import { customTheme } from './code-snippet/editor-theme';
+import { editTheme } from './code-snippet/editor-theme';
 import { useConfigurationStore } from '@/stores/configuration'
 
 const configuration = useConfigurationStore()
@@ -49,7 +49,7 @@ const code = ref(`#student: {
 }
 
 #export: #universities`)
-const extensions = [customTheme]
+const extensions = [editTheme]
 const error = ref(undefined as string | undefined);
 
 const onClick = () => {
