@@ -1,8 +1,7 @@
-import router from '@/router'
 import '@/types/app.d.ts'
 import type { MutexInterface } from 'async-mutex'
 import { Mutex } from 'async-mutex'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, isEqual } from 'lodash'
 import { defineStore } from 'pinia'
 
 export const supportedFormats = ['json', 'yaml'] as const
@@ -14,7 +13,7 @@ export const useConfigurationStore = defineStore({
     rawSchema: '' as string,
     rawPath: [] as string[],
     rawCurrent: {} as any,
-    rawCurrentType: 'complex' as CurrentType,
+    rawCurrentType: 'struct' as CurrentType,
     rawFields: [] as Field[],
     rawFormat: 'json' as Format,
     rawErrors: [] as ValueError[],
@@ -85,13 +84,13 @@ export const useConfigurationStore = defineStore({
     jumpTo(path: string[]) {
       const result = window.WasmAPI.Inspect(path, this.rawCurrent, this.rawSchema)
 
-      if (result.type != 'complex' && result.type != 'list') {
+      if (!isEqual(result.type, ['struct']) && !isEqual(result.type, ['list'])) {
         this.jumpTo(path.slice(0, path.length - 1))
         // Give components time to be rendered and then trigger focus event
         setTimeout(() => this.focus(path), 25);
       } else {
         this.rawPath = path
-        this.rawCurrentType = result.type
+        this.rawCurrentType = result.type[0] as CurrentType;
         this.rawFields = result.properties
       }
     },
@@ -191,7 +190,7 @@ function pushToArray(path: string[], object: any): any {
   }
 
   if (Array.isArray(obj)) {
-    obj.push({})
+    obj.push({}) // TODO: don't just push an object because array might be of different type
   }
 
   return ref

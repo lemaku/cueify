@@ -17,27 +17,54 @@ import { computed } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
 import Input from '@/components/fields/Input.vue'
 import Preview from '@/components/fields/Preview.vue'
+import Choice from '@/components/fields/Choice.vue'
+import NullInput from '@/components/fields/NullInput.vue'
 
 const configuration = useConfigurationStore()
 
 const components = computed(() =>
   configuration.fields
     .map((f) => {
-      let inputType = 'text'
-      let component = Input
-      switch (f.type) {
-        case 'bool':
-          inputType = 'checkbox'
-          break
-        case 'number':
-          inputType = 'number'
-          break
-        case 'complex':
-          component = Preview
-          break
-        case 'list':
-          component = Preview
-          break
+      let inputType;
+      let component;
+      if (f.type.length === 1) {
+        switch (f.type[0]) {
+          case 'null':
+            component = NullInput
+            break
+          case 'bool':
+            inputType = 'checkbox'
+            component = Input
+            break
+          case 'string':
+            inputType = 'text'
+            component = Input
+            break
+          case 'bytes':
+            inputType = 'text'
+            component = Input
+            break
+          case 'int':
+            inputType = 'number'
+            component = Input
+            break
+          case 'float':
+            inputType = 'number'
+            component = Input
+            break
+          case 'struct':
+            component = Preview
+            break
+          case 'list':
+            component = Preview
+            break
+          default:
+            console.error('Input for ', f.type[0], 'not implemented')
+            break
+        }
+      } else {
+        inputType = f.type,
+        component = Choice
       }
 
       return {

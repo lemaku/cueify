@@ -53,7 +53,7 @@ func Summarize(json string, raw string) SummarizeResult {
 	return SummarizeResult{Value: partialExport(value), Valid: false, Errors: errs}
 }
 
-func partialExport(value cue.Value) map[string]interface{} {
+func partialExport(value cue.Value) interface{} {
 	export := make(map[string]interface{})
 
 	switch value.IncompleteKind() {
@@ -65,7 +65,7 @@ func partialExport(value cue.Value) map[string]interface{} {
 			pathSelectors := property.Path().Selectors()
 			propertyName := pathSelectors[len(pathSelectors)-1].String()
 
-			if property.IncompleteKind() == cue.IntKind || property.IncompleteKind() == cue.StringKind || property.IncompleteKind() == cue.BoolKind {
+			if property.IncompleteKind().IsAnyOf(cue.NumberKind | cue.StringKind | cue.BoolKind | cue.NullKind | cue.BytesKind) {
 				if property.IsConcrete() {
 					export[propertyName] = s.Value()
 				}
@@ -73,7 +73,6 @@ func partialExport(value cue.Value) map[string]interface{} {
 				if hasDefault {
 					export[propertyName] = defaultVal
 				}
-
 			} else if property.IncompleteKind() == cue.StructKind {
 				export[propertyName] = partialExport(property)
 			} else if property.IncompleteKind() == cue.ListKind {
@@ -91,6 +90,22 @@ func partialExport(value cue.Value) map[string]interface{} {
 				}
 				export[propertyName] = arr
 			}
+		}
+	case cue.ListKind:
+		{
+			list, _ := value.List()
+
+			var arr = make([]interface{}, 0)
+
+			for list.Next() {
+				listElement := list.Value()
+				if listElement.IncompleteKind() == cue.IntKind || listElement.IncompleteKind() == cue.StringKind || listElement.IncompleteKind() == cue.BoolKind {
+					arr = append(arr, listElement.Value())
+				} else if listElement.IncompleteKind() == cue.StructKind {
+					arr = append(arr, partialExport(listElement))
+				}
+			}
+			return arr
 		}
 	}
 

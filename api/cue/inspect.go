@@ -9,9 +9,10 @@ import (
 )
 
 type Property struct {
-	Path  []string `json:"path"`
-	Type  []Kind   `json:"type"`
-	Index int      `json:"index"`
+	Path     []string `json:"path"`
+	Type     []Kind   `json:"type"`
+	Optional bool     `json:"optional"`
+	Index    int      `json:"index"`
 }
 
 type InspectionResult struct {
@@ -22,15 +23,15 @@ type InspectionResult struct {
 type Kind string
 
 const (
-	Bottom  Kind = "bottom"
-	Null    Kind = "null"
-	String  Kind = "string"
-	Bytes   Kind = "bytes"
-	Number  Kind = "number"
-	Bool    Kind = "bool"
-	List    Kind = "list"
-	Complex Kind = "complex"
-	Any     Kind = "any"
+	Bottom Kind = "bottom"
+	Null   Kind = "null"
+	String Kind = "string"
+	Bytes  Kind = "bytes"
+	Int    Kind = "int"
+	Float  Kind = "float"
+	Bool   Kind = "bool"
+	List   Kind = "list"
+	Struct Kind = "struct"
 )
 
 func Inspect(path []string, json string, raw string) InspectionResult {
@@ -42,23 +43,29 @@ func Inspect(path []string, json string, raw string) InspectionResult {
 	value := context.CompileString(json, cue.Scope(schema))
 	value = value.LookupPath(toCuePath(path))
 
-	var iter *cue.Iterator
-	if value.IncompleteKind() == cue.StructKind {
-		iter, _ = value.Fields(cue.Optional(true))
-	} else if value.IncompleteKind() == cue.ListKind {
-		tmp, _ := value.List()
-		iter = &tmp
-	} else {
-		return InspectionResult{Type: getKind(value), Properties: make([]Property, 0)}
-	}
-	var properties []Property
+	if value.IsConcrete() && value.Kind().IsAnyOf(cue.StructKind|cue.ListKind) {
+		var iter *cue.Iterator
+		if value.IncompleteKind() == cue.StructKind {
+			iter, _ = value.Fields(cue.Optional(true))
+		} else if value.IncompleteKind() == cue.ListKind {
+			tmp, _ := value.List()
+			iter = &tmp
+		} else {
+			return InspectionResult{Type: getKind(value), Properties: make([]Property, 0)}
+		}
+		var properties []Property
 
-	i := 0
-	for iter.Next() {
-		properties = append(properties, Property{Path: toStringPath(iter.Value().Path()), Type: getKind(iter.Value()), Index: i})
-		i++
+		i := 0
+		for iter.Next() {
+			// TODO: HOW TO FIGURE OUT IF property is optional??
+			properties = append(properties, Property{Path: toStringPath(iter.Value().Path()), Type: getKind(iter.Value()), Index: i})
+			i++
+		}
+		return InspectionResult{Type: getKind(value), Properties: properties}
+	} else if !value.IsConcrete() && value.IncompleteKind() == cue.StructKind {
+		// TODO: How handle this??
 	}
-	return InspectionResult{Type: getKind(value), Properties: properties}
+	return InspectionResult{Type: getKind(value), Properties: make([]Property, 0)}
 }
 
 func checkKind(value cue.Value, cueKind cue.Kind, cueifyKind Kind, collection []Kind) []Kind {
@@ -73,16 +80,15 @@ func getKind(value cue.Value) []Kind {
 	kind = checkKind(value, cue.BottomKind, Bottom, kind)
 	kind = checkKind(value, cue.NullKind, Null, kind)
 	kind = checkKind(value, cue.BoolKind, Bool, kind)
-	kind = checkKind(value, cue.IntKind, Number, kind)
-	kind = checkKind(value, cue.FloatKind, Number, kind)
+	kind = checkKind(value, cue.IntKind, Int, kind)
+	kind = checkKind(value, cue.FloatKind, Float, kind)
 	kind = checkKind(value, cue.StringKind, String, kind)
 	kind = checkKind(value, cue.BytesKind, Bytes, kind)
 	kind = checkKind(value, cue.ListKind, List, kind)
-	kind = checkKind(value, cue.StructKind, Complex, kind)
+	kind = checkKind(value, cue.StructKind, Struct, kind)
 
 	if len(kind) == 0 {
 		panic(fmt.Errorf("Kind %v not implemented", value.IncompleteKind().TypeString()))
-
 	}
 
 	// This only removes consecutive equal copies => number, number need to be right after each other!

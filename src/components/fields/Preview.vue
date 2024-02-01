@@ -25,13 +25,14 @@
 import { ref, computed } from 'vue'
 import { useConfigurationStore } from '@/stores/configuration'
 import CodeSnippet from '@/components/code-snippet/CodeSnippet.vue'
+import { isEqual } from 'lodash';
 
 const props = defineProps(['path'])
 const configuration = useConfigurationStore()
 
 const { unset, get, setToEmpty, fields, jumpTo } = configuration
 
-const isArray = fields.find((f) => f.path === props.path)?.type === 'list'
+const isArray = isEqual(fields.find((f) => f.path === props.path)?.type, ['list'])
 
 const content = computed(() => JSON.stringify(configuration.get(props.path)))
 const collapsed = ref(true)

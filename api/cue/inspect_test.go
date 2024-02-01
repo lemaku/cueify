@@ -29,7 +29,7 @@ const schema = `
 
 func TestInspectRoot(t *testing.T) {
 	result := Inspect([]string{}, "{}", schema)
-	expectedType := []Kind{Complex}
+	expectedType := []Kind{Struct}
 	expectedProperties := 2
 
 	if !reflect.DeepEqual(result.Type, expectedType) {
@@ -43,7 +43,7 @@ func TestInspectRoot(t *testing.T) {
 
 func TestInspectMiddle(t *testing.T) {
 	result := Inspect([]string{"tuwien"}, "{ tuwien: { students: [] } }", schema)
-	expectedType := []Kind{Complex}
+	expectedType := []Kind{Struct}
 	expectedProperties := 2
 
 	if !reflect.DeepEqual(result.Type, expectedType) {
@@ -66,7 +66,7 @@ func TestInspectDeep(t *testing.T) {
 		]
 	}
 }`, schema)
-	expectedType := []Kind{Complex}
+	expectedType := []Kind{Struct}
 	expectedProperties := 4
 
 	if !reflect.DeepEqual(result.Type, expectedType) {
@@ -85,6 +85,7 @@ func TestInspectComplexSchema(t *testing.T) {
 }`
 	schema := `#export: {
 	a: {
+		a?: string
 		b: number | bool
 		c: { d: string } | string
 		e: float | _
@@ -92,7 +93,9 @@ func TestInspectComplexSchema(t *testing.T) {
 		g: >2
 		h: string
 		i: "Hello, \(h)!"
-		j: bytes
+		j: bytes,
+		k: [...string] | [...int]
+		l: { a: string } | { b: string }
 	}
 }`
 
@@ -102,13 +105,46 @@ func TestInspectComplexSchema(t *testing.T) {
 			t.Fatalf("Type for %v should have been %v but was %v", strings.Join(path, "."), expectedType, result.Type)
 		}
 	}
-	test([]string{"a"}, []Kind{Complex})
-	test([]string{"a", "b"}, []Kind{Bool, Number})
-	test([]string{"a", "c"}, []Kind{String, Complex})
-	test([]string{"a", "e"}, []Kind{Null, Bool, Number, String, Bytes, List, Complex})
+	// TODO: use snapshot tests
+	test([]string{"a"}, []Kind{Struct})
+	test([]string{"a", "b"}, []Kind{Bool, Int, Float})
+	test([]string{"a", "c"}, []Kind{String, Struct})
+	test([]string{"a", "e"}, []Kind{Null, Bool, Int, Float, String, Bytes, List, Struct})
 	test([]string{"a", "f"}, []Kind{Null})
-	test([]string{"a", "g"}, []Kind{Number})
+	test([]string{"a", "g"}, []Kind{Int, Float})
 	test([]string{"a", "h"}, []Kind{String})
 	test([]string{"a", "i"}, []Kind{Bottom})
 	test([]string{"a", "j"}, []Kind{Bytes})
+	test([]string{"a", "k"}, []Kind{List})
+	test([]string{"a", "l"}, []Kind{Struct})
+}
+
+func TestInspectSuperComplexSchema(t *testing.T) {
+	json := `{
+	a: {
+		b: [],
+		c: {},
+		d: [],
+		e: {}
+	}
+}`
+	schema := `#export: {
+	a: {
+		b: [...string] | { b: string }
+		c: [...string] | { b: string }
+		d: [...string] | [...int]
+		e: { a: string } | { b: string }
+	}
+}`
+
+	test := func(path []string, expectedType []Kind) {
+		result := Inspect(path, json, schema)
+		if !reflect.DeepEqual(result.Type, expectedType) {
+			t.Fatalf("Type for %v should have been %v but was %v", strings.Join(path, "."), expectedType, result.Type)
+		}
+	}
+	test([]string{"a", "b"}, []Kind{List}) // TODO: Should say type of list
+	test([]string{"a", "c"}, []Kind{Struct})
+	test([]string{"a", "d"}, []Kind{List})   // TODO: Should give option of type
+	test([]string{"a", "e"}, []Kind{Struct}) // TODO: Should give both props as options
 }

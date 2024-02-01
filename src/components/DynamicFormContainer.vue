@@ -1,5 +1,5 @@
 <template>
-  <ComplexForm v-if="currentType == 'complex'" />
+  <ComplexForm v-if="currentType == 'struct'" />
   <ListForm v-else-if="currentType == 'list'" />
   <div v-else>Error</div>
 </template>

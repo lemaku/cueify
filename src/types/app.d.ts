@@ -1,13 +1,14 @@
-type FieldType = 'string' | 'number' | 'bool' | 'list' | 'complex'
+type FieldType = 'bottom' | 'null' | 'string' | 'bytes' | 'int' | 'float' | 'bool' | 'list' | 'struct';
 type Path = string[]
 
 type Field = {
   path: Path
-  type: FieldType
+  type: FieldType[]
+  optional: boolean
   index: number
 }
 
-type CurrentType = 'list' | 'complex'
+type CurrentType = 'list' | 'struct'
 
 type ValueError = {
   path: Path
