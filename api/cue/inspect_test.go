@@ -1,12 +1,24 @@
 package cue
 
 import (
-	"reflect"
-	"strings"
+	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/cuecontext"
+	"encoding/json"
+	"fmt"
+	"github.com/gkampitakis/go-snaps/snaps"
 	"testing"
 )
 
-const schema = `
+func matchInspectSnapshot(t *testing.T, value interface{}) {
+	jsonResult, err := json.MarshalIndent(value, "", "    ")
+	if err != nil {
+		panic("Error: couldn't serialize result to use for the snapshot")
+	}
+	snaps.MatchSnapshot(t, string(jsonResult))
+}
+
+func TestUniversitiesSchema(t *testing.T) {
+	schema := `
 #student: {
 	matNr:  string & =~"^[0-9]{8}$"
 	name:   string
@@ -21,66 +33,39 @@ const schema = `
 		name: "Vienna University of Technology",
 		students: [...#student]
 	},
-	countryCode: string
+	countryCode?: string
 }
 
 #export: #universities
 `
-
-func TestInspectRoot(t *testing.T) {
-	result := Inspect([]string{}, "{}", schema)
-	expectedType := []Kind{Struct}
-	expectedProperties := 2
-
-	if !reflect.DeepEqual(result.Type, expectedType) {
-		t.Fatalf("Type should have been %v but was %v", expectedType, result.Type)
-	}
-
-	if len(result.Properties) != expectedProperties {
-		t.Fatalf("There should have been %d properties but there were only %d", expectedProperties, len(result.Properties))
-	}
-}
-
-func TestInspectMiddle(t *testing.T) {
-	result := Inspect([]string{"tuwien"}, "{ tuwien: { students: [] } }", schema)
-	expectedType := []Kind{Struct}
-	expectedProperties := 2
-
-	if !reflect.DeepEqual(result.Type, expectedType) {
-		t.Fatalf("Type should have been %v but was %v", expectedType, result.Type)
-	}
-
-	if len(result.Properties) != expectedProperties {
-		t.Fatalf("There should have been %d properties but there were only %d", expectedProperties, len(result.Properties))
-	}
-}
-
-func TestInspectDeep(t *testing.T) {
-	result := Inspect([]string{"tuwien", "students", "0"}, `{
-	tuwien: {
-		name: "Vienna University of Technology",
-		students: [
-			{
-				name: "Test"
-			}
-		]
-	}
-}`, schema)
-	expectedType := []Kind{Struct}
-	expectedProperties := 4
-
-	if !reflect.DeepEqual(result.Type, expectedType) {
-		t.Fatalf("Type should have been %v but was %v", expectedType, result.Type)
-	}
-
-	if len(result.Properties) != expectedProperties {
-		t.Fatalf("There should have been %d properties but there were only %d", expectedProperties, len(result.Properties))
-	}
+	matchInspectSnapshot(t, Inspect([]string{}, "{}", schema))
+	matchInspectSnapshot(t, Inspect([]string{"tuwien"}, `{ "tuwien": { "students": [] } }`, schema))
+	matchInspectSnapshot(t, Inspect([]string{"tuwien", "students"}, `{
+		"tuwien": {
+			"name": "Vienna University of Technology",
+			"students": [
+				{
+					"name": "Test"
+				}
+			]
+		}
+	}`, schema))
+	matchInspectSnapshot(t, Inspect([]string{"tuwien", "students", "0"}, `{
+		"tuwien": {
+			"name": "Vienna University of Technology",
+			"students": [
+				{
+					"name": "Test"
+				}
+			]
+		}
+	}`, schema))
 }
 
 func TestInspectComplexSchema(t *testing.T) {
-	json := `{
+	raw := `{
 	a: {
+		k1: []
 	}
 }`
 	schema := `#export: {
@@ -94,57 +79,71 @@ func TestInspectComplexSchema(t *testing.T) {
 		h: string
 		i: "Hello, \(h)!"
 		j: bytes,
-		k: [...string] | [...int]
-		l: { a: string } | { b: string }
+		k1: [...string]
+		k2: [...string]
+		l: [...string] | [...int]
+		m: { a: string } | { b: string }
 	}
 }`
-
-	test := func(path []string, expectedType []Kind) {
-		result := Inspect(path, json, schema)
-		if !reflect.DeepEqual(result.Type, expectedType) {
-			t.Fatalf("Type for %v should have been %v but was %v", strings.Join(path, "."), expectedType, result.Type)
-		}
-	}
-	// TODO: use snapshot tests
-	test([]string{"a"}, []Kind{Struct})
-	test([]string{"a", "b"}, []Kind{Bool, Int, Float})
-	test([]string{"a", "c"}, []Kind{String, Struct})
-	test([]string{"a", "e"}, []Kind{Null, Bool, Int, Float, String, Bytes, List, Struct})
-	test([]string{"a", "f"}, []Kind{Null})
-	test([]string{"a", "g"}, []Kind{Int, Float})
-	test([]string{"a", "h"}, []Kind{String})
-	test([]string{"a", "i"}, []Kind{Bottom})
-	test([]string{"a", "j"}, []Kind{Bytes})
-	test([]string{"a", "k"}, []Kind{List})
-	test([]string{"a", "l"}, []Kind{Struct})
+	matchInspectSnapshot(t, Inspect([]string{"a"}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"a", "k1"}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"a", "k2"}, raw, schema))
 }
 
 func TestInspectSuperComplexSchema(t *testing.T) {
-	json := `{
-	a: {
-		b: [],
-		c: {},
-		d: [],
-		e: {}
-	}
+	raw := `{
+	"b": [],
+	"c": {},
+	"d": [],
+	"e": {}
 }`
 	schema := `#export: {
-	a: {
-		b: [...string] | { b: string }
-		c: [...string] | { b: string }
-		d: [...string] | [...int]
-		e: { a: string } | { b: string }
-	}
+	b?: [...string] | { b: string }
+	b2: [...string] | { b: string }
+	c: [...string] | { b: string }
+	c2: [...string] | { b: string }
+	d: [...string] | [...int|bool]
+	d2: [...string] | [...int|bool]
+	e: { a: string } | { b: string }
+	e2: { a: string } | { b: string }
+	f: { b?: string } | { b: int }
 }`
+	matchInspectSnapshot(t, Inspect([]string{}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"b"}, raw, schema)) // TODO this is still a problem
+	matchInspectSnapshot(t, Inspect([]string{"b2"}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"d"}, raw, schema))  // TODO still issue because .Eval can't be used
+	matchInspectSnapshot(t, Inspect([]string{"d2"}, raw, schema)) // TODO still issue because .Eval can't be used
+	matchInspectSnapshot(t, Inspect([]string{"e"}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"e2"}, raw, schema))
+	matchInspectSnapshot(t, Inspect([]string{"f"}, raw, schema))
+}
 
-	test := func(path []string, expectedType []Kind) {
-		result := Inspect(path, json, schema)
-		if !reflect.DeepEqual(result.Type, expectedType) {
-			t.Fatalf("Type for %v should have been %v but was %v", strings.Join(path, "."), expectedType, result.Type)
-		}
-	}
-	test([]string{"a", "b"}, []Kind{List}) // TODO: Should say type of list
-	test([]string{"a", "c"}, []Kind{Struct})
-	test([]string{"a", "d"}, []Kind{List})   // TODO: Should give option of type
-	test([]string{"a", "e"}, []Kind{Struct}) // TODO: Should give both props as options
+func TestLookupPath(t *testing.T) {
+	context := cuecontext.New()
+
+	// I would expect this to print "string"
+	value := context.CompileString(`["abc"]`)
+	fmt.Println(value.LookupPath(cue.MakePath(cue.AnyIndex)))
+	fmt.Println(value.Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
+
+	// I would expect this to print "string" just like if "value" was simply [...string]
+	value = context.CompileString(`([...string] | { a: string }) & []`)
+	fmt.Println(value.Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
+
+	value = context.CompileString(`([...string] | [...int]) & []`)
+	op, values := value.Eval().Expr()
+	// op is OrOp
+	fmt.Println(op)
+	// => I would expect this to print "string"
+	fmt.Println(values[0].Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
+	// => I would expect this to print "int"
+	fmt.Println(values[1].Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
+
+	// I would expect this to print "string"
+	value = context.CompileString(`([...string] | { a: string }) & ["abc"]`)
+	fmt.Println(value.Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
+
+	// U would expect this to print "string"
+	value = context.CompileString(`{ a: [...[...string]]} & {a: [[]]}`).LookupPath(cue.ParsePath("a[0]"))
+	fmt.Println(value.Eval().LookupPath(cue.MakePath(cue.AnyIndex)))
 }

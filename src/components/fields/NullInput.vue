@@ -7,7 +7,11 @@
   <template v-else>
     <div class="form-input">
       <input class="form-control read-only" v-model="curVal" disabled />
-      <button class="icon-button" :disabled="isUndefined" @click="onClear()">
+      <button
+        class="icon-button"
+        :disabled="currentType !== 'list' && (isUndefined || isDerived)"
+        @click="onClear()"
+      >
         <i class="pi pi-eraser"></i>
       </button>
     </div>
@@ -20,8 +24,9 @@ import { computed } from 'vue'
 
 const props = defineProps(['path', 'type', 'placeholder'])
 const configuration = useConfigurationStore()
-const { set, unset, get } = configuration
+const { set, unset, get, currentType, isDerived: derived } = configuration
 
+const isDerived = computed(() => derived(props.path))
 const isUndefined = computed(() => get(props.path) === undefined)
 const curVal = computed(() => (isUndefined.value ? '' : 'null'))
 

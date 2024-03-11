@@ -98,7 +98,16 @@ input:not(.input-error):not(.input-success):focus  {
   color: var(--vt-c-accent)
 }
 
+.icon-button:hover:disabled {
+  color: var(--color-text);
+}
+
 button:disabled {
   opacity: 50%;
   cursor: auto;
+  color: var(--color-text);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.95);
 }

@@ -1,10 +1,8 @@
 <template>
   <div class="s-container">
-    <h1>Webform for CUElang definitions</h1>
+    <h1>Web form for CUE definitions</h1>
     <p>
-      Please enter your CUE defintion in the editor below. Make sure to "export" the defition that
-      should be used as the root by creating a definition called #export and setting it to the
-      desired definition.
+      Please enter your CUE defintion in the editor below. Make sure to name your definition "export".
     </p>
     <codemirror
       v-model="code"
@@ -31,24 +29,16 @@ const configuration = useConfigurationStore()
 const { setSchema } = configuration
 
 // TODO: remove default
-const code = ref(`#student: {
-	matNr:  string & =~"^[0-9]{8}$"
-	name:   string
-	active: *true | bool
-    if active {
-        semester: int
-    }
-}
-
-#universities: {
-	tuwien: {
-		name: "Vienna University of Technology" | "University of Vienna",
-		students: [...#student]
-	},
-	countryCode: string
-}
-
-#export: #universities`)
+const code = ref(`#export: {
+  x: int
+  y: x
+  z: y
+  p?: { type: "type1", eitherThis: string } | { type: "type2", orThat: string }
+  a: [...string]
+  b: [...string] | [...int]
+  c: [...{a: string}]
+  d: [...[...string]]
+}`)
 const extensions = [editTheme]
 const error = ref(undefined as string | undefined);
 

@@ -30,7 +30,7 @@ const { schemaSet } = storeToRefs(configuration)
 .f-container {
   display: grid;
   grid-template-rows: min-content auto auto;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: calc((100% - 20px) / 2) calc((100% - 20px) / 2);
   gap: 5px 20px;
 }
 

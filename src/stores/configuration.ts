@@ -1,8 +1,11 @@
 import '@/types/app.d.ts'
 import type { MutexInterface } from 'async-mutex'
 import { Mutex } from 'async-mutex'
-import { cloneDeep, isEqual } from 'lodash'
+import { cloneDeep, isArray, isEmpty, isEqual, isObject } from 'lodash'
 import { defineStore } from 'pinia'
+import emitter from '@/event-bus'
+import { useGlobalStore } from './global'
+import { watch } from 'vue'
 
 export const supportedFormats = ['json', 'yaml'] as const
 export type Format = (typeof supportedFormats)[number]
@@ -14,11 +17,35 @@ export const useConfigurationStore = defineStore({
     rawPath: [] as string[],
     rawCurrent: {} as any,
     rawCurrentType: 'struct' as CurrentType,
+    rawCurrentOf: undefined as undefined | FieldType[],
     rawFields: [] as Field[],
     rawFormat: 'json' as Format,
     rawErrors: [] as ValueError[],
     lock: new Mutex() as MutexInterface
   }),
+  persist: {
+    key: 'cueify.appdata',
+    paths: ['rawSchema', 'rawPath', 'rawCurrent', 'rawFormat'],
+    storage: sessionStorage,
+    afterRestore: (ctx) => {
+      const { rawSchema, rawPath, rawCurrent, rawFormat } = ctx.store.$state
+      const stop = watch(useGlobalStore(), (state) => {
+        if (state.wasmInitialized) {
+          if (rawSchema && isArray(rawPath) && isObject(rawCurrent) && rawFormat) {
+            try {
+              ctx.store.summarize(rawCurrent)
+              ctx.store.jumpTo(rawPath)
+            } catch (_) {
+              ctx.store.$reset()
+            }
+          } else {
+            ctx.store.$reset()
+          }
+          stop()
+        }
+      })
+    }
+  },
   getters: {
     schemaSet: (state): boolean => {
       return state.rawSchema ? true : false
@@ -29,6 +56,9 @@ export const useConfigurationStore = defineStore({
     currentType: (state): CurrentType => {
       return state.rawCurrentType
     },
+    currentOf: (state): FieldType[] | undefined => {
+      return state.rawCurrentOf
+    },
     current: (state): any => {
       return state.rawCurrent
     },
@@ -38,8 +68,8 @@ export const useConfigurationStore = defineStore({
     errors: (state): ValueError[] => {
       return state.rawErrors
     },
-    isLoading: (state): boolean => {
-      return state.lock.isLocked()
+    isValid: (state): boolean => {
+      return isEmpty(state.rawErrors)
     },
     breadcrumbs: (state): BreadCrumb[] => {
       const path: string[] = []
@@ -57,12 +87,18 @@ export const useConfigurationStore = defineStore({
     },
     get: (state) => {
       return (path: string[]) => {
-        let obj = state.rawCurrent
-        let i = 0
-        for (i = 0; i < path.length - 1; i++) {
-          obj = obj[path[i]]
-        }
-        return obj[path[i]]
+        return getValue(path, state.rawCurrent)
+      }
+    },
+    isDerived: (state) => {
+      // Calculate diff between current value and the value that would result off unsetting the current value
+      // => If there is no difference, it means that the current value is derived and unsetting has no effect
+      return (path: string[]) => {
+        const currentValue = getValue(path, state.rawCurrent)
+        const newRaw = unsetValue(path, state.rawCurrent)
+        const result = window.WasmAPI.Summarize(newRaw, state.rawSchema)
+        const newValue = getValue(path, result.value)
+        return isEqual(currentValue, newValue)
       }
     }
   },
@@ -73,7 +109,6 @@ export const useConfigurationStore = defineStore({
       if (res.valid) {
         this.rawSchema = schema
 
-        // TODO reevalute this:
         this.rawCurrent = {}
 
         this.summarize(this.rawCurrent)
@@ -87,15 +122,13 @@ export const useConfigurationStore = defineStore({
       if (!isEqual(result.type, ['struct']) && !isEqual(result.type, ['list'])) {
         this.jumpTo(path.slice(0, path.length - 1))
         // Give components time to be rendered and then trigger focus event
-        setTimeout(() => this.focus(path), 25);
+        setTimeout(() => emitter.$emit('focus', path), 50)
       } else {
         this.rawPath = path
-        this.rawCurrentType = result.type[0] as CurrentType;
+        this.rawCurrentType = result.type[0] as CurrentType
+        this.rawCurrentOf = result.of as CurrentType[] | undefined
         this.rawFields = result.properties
       }
-    },
-    // Fix this as it should just be an event triggered
-    focus(path: string[]) {
     },
     async set(path: string[], value: any) {
       await this.lock.acquire()
@@ -104,6 +137,7 @@ export const useConfigurationStore = defineStore({
 
       if (res.valid) {
         this.summarize(newRaw)
+        this.jumpTo(this.rawPath)
       }
 
       this.lock.release()
@@ -114,11 +148,7 @@ export const useConfigurationStore = defineStore({
       if (this.get(path) !== undefined) {
         const newRaw = unsetValue(path, this.rawCurrent)
         this.summarize(newRaw)
-        this.rawFields = window.WasmAPI.Inspect(
-          this.rawPath,
-          this.rawCurrent,
-          this.rawSchema
-        ).properties
+        this.jumpTo(this.rawPath)
       }
       this.lock.release()
     },
@@ -126,17 +156,14 @@ export const useConfigurationStore = defineStore({
       await this.lock.acquire()
       const newRaw = setValue(path, isArray ? [] : {}, this.rawCurrent)
       this.summarize(newRaw)
+      this.jumpTo(this.rawPath)
       this.lock.release()
     },
-    async addToArray() {
+    async addToArray(toPush: any) {
       await this.lock.acquire()
-      const newRaw = pushToArray(this.rawPath, this.rawCurrent)
+      const newRaw = pushToArray(this.rawPath, this.rawCurrent, toPush)
       this.summarize(newRaw)
-      this.rawFields = window.WasmAPI.Inspect(
-        this.rawPath,
-        this.rawCurrent,
-        this.rawSchema
-      ).properties
+      this.jumpTo(this.rawPath)
       this.lock.release()
     },
     summarize(raw: any) {
@@ -149,6 +176,15 @@ export const useConfigurationStore = defineStore({
     }
   }
 })
+
+function getValue(path: string[], value: any) {
+  let obj = value
+  let i = 0
+  for (i = 0; i < path.length - 1; i++) {
+    obj = obj[path[i]]
+  }
+  return obj[path[i]]
+}
 
 function setValue(path: string[], value: any, object: any): any {
   const ref = cloneDeep(object ?? {})
@@ -180,7 +216,7 @@ function unsetValue(path: string[], object: any): any {
   return ref
 }
 
-function pushToArray(path: string[], object: any): any {
+function pushToArray(path: string[], object: any, toPush: any): any {
   const ref = cloneDeep(object ?? {})
   let obj = ref
   let i = 0
@@ -190,7 +226,7 @@ function pushToArray(path: string[], object: any): any {
   }
 
   if (Array.isArray(obj)) {
-    obj.push({}) // TODO: don't just push an object because array might be of different type
+    obj.push(toPush)
   }
 
   return ref

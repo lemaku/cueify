@@ -16,17 +16,20 @@
   "dependencies": {
     "async-mutex": "^0.4.1",
     "codemirror": "^6.0.1",
+    "copy-to-clipboard": "^3.3.3",
     "highlight.js": "^11.9.0",
     "lodash": "^4.17.21",
     "marked": "^9.1.5",
     "marked-highlight": "^2.0.6",
     "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "primeicons": "^6.0.1",
-    "primevue": "^3.46.0",
+    "tiny-emitter": "^2.1.0",
     "vue": "^3.3.4",
     "vue-codemirror": "^6.1.1",
     "vue-loading-overlay": "^6.0.3",
     "vue-router": "^4.2.5",
+    "vue-toastification": "^2.0.0-rc.5",
     "yaml": "^2.3.4"
   },
   "devDependencies": {

@@ -1,0 +1,545 @@
+
+[TestUniversitiesSchema - 1]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "tuwien"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "countryCode"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": true
+        }
+    ]
+}
+---
+
+[TestUniversitiesSchema - 2]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "tuwien",
+                "name"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "tuwien",
+                "students"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestInspectComplexSchema - 1]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "a",
+                "a"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": true
+        },
+        {
+            "path": [
+                "a",
+                "b"
+            ],
+            "type": [
+                "bool",
+                "int",
+                "float"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "c"
+            ],
+            "type": [
+                "string",
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "e"
+            ],
+            "type": [
+                "null",
+                "bool",
+                "int",
+                "float",
+                "string",
+                "bytes",
+                "list",
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "f"
+            ],
+            "type": [
+                "null"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "g"
+            ],
+            "type": [
+                "int",
+                "float"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "h"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "i"
+            ],
+            "type": [
+                "bottom"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "j"
+            ],
+            "type": [
+                "bytes"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "k1"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "k2"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "l"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "a",
+                "m"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestUniversitiesSchema - 3]
+{
+    "type": [
+        "list"
+    ],
+    "of": [
+        "struct"
+    ],
+    "properties": [
+        {
+            "path": [
+                "tuwien",
+                "students",
+                "0"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestUniversitiesSchema - 4]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "tuwien",
+                "students",
+                "0",
+                "matNr"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "tuwien",
+                "students",
+                "0",
+                "name"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "tuwien",
+                "students",
+                "0",
+                "semester"
+            ],
+            "type": [
+                "int"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "tuwien",
+                "students",
+                "0",
+                "active"
+            ],
+            "type": [
+                "bool"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestInspectSuperComplexSchema - 1]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "b"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "b2"
+            ],
+            "type": [
+                "list",
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "c"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "c2"
+            ],
+            "type": [
+                "list",
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "d"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "d2"
+            ],
+            "type": [
+                "list"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "e"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "e2"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "f"
+            ],
+            "type": [
+                "struct"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestInspectSuperComplexSchema - 2]
+{
+    "type": [
+        "list"
+    ],
+    "of": [
+        "string",
+        "bottom"
+    ],
+    "properties": null
+}
+---
+
+[TestInspectSuperComplexSchema - 3]
+{
+    "type": [
+        "list",
+        "struct"
+    ],
+    "of": null,
+    "properties": []
+}
+---
+
+[TestInspectSuperComplexSchema - 4]
+{
+    "type": [
+        "list"
+    ],
+    "of": [
+        "string",
+        "bool",
+        "int"
+    ],
+    "properties": null
+}
+---
+
+[TestInspectSuperComplexSchema - 5]
+{
+    "type": [
+        "list"
+    ],
+    "of": [
+        "string",
+        "bool",
+        "int"
+    ],
+    "properties": null
+}
+---
+
+[TestInspectSuperComplexSchema - 6]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "e",
+                "a"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "e",
+                "b"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestInspectSuperComplexSchema - 7]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "e2",
+                "a"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        },
+        {
+            "path": [
+                "e2",
+                "b"
+            ],
+            "type": [
+                "string"
+            ],
+            "optional": false
+        }
+    ]
+}
+---
+
+[TestInspectComplexSchema - 2]
+{
+    "type": [
+        "bottom"
+    ],
+    "of": null,
+    "properties": []
+}
+---
+
+[TestInspectComplexSchema - 3]
+{
+    "type": [
+        "bottom"
+    ],
+    "of": null,
+    "properties": []
+}
+---
+
+[TestInspectSuperComplexSchema - 8]
+{
+    "type": [
+        "struct"
+    ],
+    "of": null,
+    "properties": [
+        {
+            "path": [
+                "f",
+                "b"
+            ],
+            "type": [
+                "string",
+                "int"
+            ],
+            "optional": false
+        }
+    ]
+}
+---

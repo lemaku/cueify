@@ -6,15 +6,22 @@ import (
 	"cuelang.org/go/cue/errors"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
-type ValidationError struct {
+type Errors struct {
+	Self   []string            `json:"self"`
+	Others map[string][]string `json:"others"`
+}
+
+type OtherError struct {
+	Path   []string `json:"path"`
 	Errors []string `json:"errors"`
 }
 
 type ValidationResult struct {
-	Valid  bool     `json:"valid"`
-	Errors []string `json:"errors"`
+	Valid  bool   `json:"valid"`
+	Errors Errors `json:"errors"`
 }
 
 func Validate(path []string, json string, raw string) ValidationResult {
@@ -26,30 +33,31 @@ func Validate(path []string, json string, raw string) ValidationResult {
 	value := context.CompileString(json, cue.Scope(schema))
 
 	err := value.Validate(
-		cue.Attributes(true),
-		cue.Concrete(true),
-		cue.Definitions(false),
-		cue.DisallowCycles(false),
-		cue.Docs(false),
-		cue.Hidden(false),
-		cue.Optional(false))
+		cue.Concrete(false),
+		cue.Optional(true))
 
 	if err != nil {
-		var validationErrors []string
+		errs := Errors{
+			Self:   make([]string, 0),
+			Others: make(map[string][]string),
+		}
 
-		errs := errors.Errors(err)
+		for _, e := range errors.Errors(err) {
+			format, args := e.Msg()
+			msg := fmt.Sprintf(format, args...)
+			errPath := strings.Join(e.Path(), ".")
 
-		for _, e := range errs {
 			if reflect.DeepEqual(e.Path(), path) {
-				format, args := e.Msg()
-				validationErrors = append(validationErrors, fmt.Sprintf(format, args...))
+				errs.Self = append(errs.Self, msg)
+			} else if len(errs.Others[errPath]) > 0 {
+				errs.Others[errPath] = append(errs.Others[errPath], msg)
+			} else {
+				errs.Others[errPath] = []string{msg}
 			}
 		}
 
-		if len(validationErrors) > 0 {
-			return ValidationResult{Valid: false, Errors: validationErrors}
-		}
+		return ValidationResult{Valid: false, Errors: errs}
 	}
 
-	return ValidationResult{Valid: true, Errors: make([]string, 0)}
+	return ValidationResult{Valid: true}
 }

@@ -14,7 +14,8 @@ export const editTheme = EditorView.theme(
     '&': {
       backgroundColor: backgroundColor,
       color: textColor,
-      borderRadius: '0.4rem'
+      borderRadius: '0.4rem',
+      height: 'fit-content'
     },
     '.cm-content': {
       caretColor: accent
@@ -31,7 +32,7 @@ export const editTheme = EditorView.theme(
       backgroundColor: accent60
     },
     '.cm-gutters': {
-      backgroundColor: transparent,
+      backgroundColor: backgroundColor,
       color: lineNumberColor,
       border: 'none'
     },
@@ -65,7 +66,8 @@ export const readOnlyTheme = EditorView.theme(
     '&': {
       backgroundColor: backgroundColor,
       color: textColor,
-      borderRadius: '0.4rem'
+      borderRadius: '0.4rem',
+      height: '100%'
     },
     '.cm-content': {
       caretColor: accent
@@ -82,10 +84,11 @@ export const readOnlyTheme = EditorView.theme(
       backgroundColor: transparent
     },
     '.cm-gutters': {
-      backgroundColor: transparent,
+      backgroundColor: backgroundColor,
       color: lineNumberColor,
       border: 'none'
     },
+    '.cm-scroller': { overflow: 'auto', height: '100%' },
     '.cm-activeLineGutter': {
       backgroundColor: transparent
     },

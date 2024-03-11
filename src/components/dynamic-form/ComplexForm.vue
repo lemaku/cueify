@@ -1,7 +1,9 @@
 <template>
   <div class="form-container">
     <template v-for="field in components" :key="field.path.join('.')">
-      <label :for="field.path.join('.')">{{ field.path[field.path.length - 1] }}</label>
+      <label :for="field.path.join('.')"
+        >{{ field.path[field.path.length - 1] }}{{ field.optional ? '?' : '' }}</label
+      >
       <component
         :is="field.type"
         :type="field.inputType"
@@ -13,68 +15,66 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useConfigurationStore } from '@/stores/configuration'
-import Input from '@/components/fields/Input.vue'
-import Preview from '@/components/fields/Preview.vue'
 import Choice from '@/components/fields/Choice.vue'
+import Input from '@/components/fields/Input.vue'
 import NullInput from '@/components/fields/NullInput.vue'
+import Preview from '@/components/fields/Preview.vue'
+import { useConfigurationStore } from '@/stores/configuration'
+import { computed } from 'vue'
 
 const configuration = useConfigurationStore()
 
 const components = computed(() =>
-  configuration.fields
-    .map((f) => {
-      let inputType;
-      let component;
-      if (f.type.length === 1) {
-        switch (f.type[0]) {
-          case 'null':
-            component = NullInput
-            break
-          case 'bool':
-            inputType = 'checkbox'
-            component = Input
-            break
-          case 'string':
-            inputType = 'text'
-            component = Input
-            break
-          case 'bytes':
-            inputType = 'text'
-            component = Input
-            break
-          case 'int':
-            inputType = 'number'
-            component = Input
-            break
-          case 'float':
-            inputType = 'number'
-            component = Input
-            break
-          case 'struct':
-            component = Preview
-            break
-          case 'list':
-            component = Preview
-            break
-          default:
-            console.error('Input for ', f.type[0], 'not implemented')
-            break
-        }
-      } else {
-        inputType = f.type,
-        component = Choice
+  configuration.fields.map((f) => {
+    let inputType
+    let component
+    if (f.type.length === 1) {
+      switch (f.type[0]) {
+        case 'null':
+          component = NullInput
+          break
+        case 'bool':
+          inputType = 'checkbox'
+          component = Input
+          break
+        case 'string':
+          inputType = 'text'
+          component = Input
+          break
+        case 'bytes':
+          inputType = 'text'
+          component = Input
+          break
+        case 'int':
+          inputType = 'number'
+          component = Input
+          break
+        case 'float':
+          inputType = 'number'
+          component = Input
+          break
+        case 'struct':
+          component = Preview
+          break
+        case 'list':
+          component = Preview
+          break
+        default:
+          console.error('Input for ', f.type[0], 'not implemented')
+          break
       }
+    } else {
+      inputType = f.type
+      component = Choice
+    }
 
-      return {
-        type: component,
-        path: f.path,
-        inputType: inputType,
-        index: f.index
-      }
-    })
-    .sort((a, b) => a.index - b.index)
+    return {
+      type: component,
+      path: f.path,
+      inputType: inputType,
+      optional: f.optional
+    }
+  })
 )
 </script>
 
@@ -82,9 +82,9 @@ const components = computed(() =>
 .form-container {
   display: grid;
   grid-template-columns: minmax(min-content, 30%) minmax(70%, 100%);
+  grid-auto-rows: max-content;
   grid-gap: 1em;
   align-items: start;
   justify-items: start;
-  height: fit-content;
 }
 </style>

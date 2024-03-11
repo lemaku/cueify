@@ -13,7 +13,6 @@
       </div>
     </template>
   </div>
-  <p class="done-header" v-else>Congrats you're done!</p>
 </template>
 
 <script setup lang="ts">
@@ -38,11 +37,6 @@ const errors = computed(() => {
 .errors-header {
   grid-column: 1 / span 2;
   color: var(--vt-c-grey);
-  font-size: 1rem;
-  font-weight: bold;
-}
-.done-header {
-  color: var(--vt-c-success);
   font-size: 1rem;
   font-weight: bold;
 }

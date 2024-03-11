@@ -5,7 +5,6 @@ type Field = {
   path: Path
   type: FieldType[]
   optional: boolean
-  index: number
 }
 
 type CurrentType = 'list' | 'struct'
@@ -13,6 +12,13 @@ type CurrentType = 'list' | 'struct'
 type ValueError = {
   path: Path
   errors: string[]
+}
+
+type ValidationError = {
+  self: string[]
+  others: {
+    [path: string]: string[]
+  }
 }
 
 type BreadCrumb = {
