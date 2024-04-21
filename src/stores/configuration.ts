@@ -181,9 +181,9 @@ function getValue(path: string[], value: any) {
   let obj = value
   let i = 0
   for (i = 0; i < path.length - 1; i++) {
-    obj = obj[path[i]]
+    obj = obj[path[i].replace(/['"]+/g, '')]
   }
-  return obj[path[i]]
+  return obj[path[i].replace(/['"]+/g, '')]
 }
 
 function setValue(path: string[], value: any, object: any): any {
@@ -191,10 +191,10 @@ function setValue(path: string[], value: any, object: any): any {
   let obj = ref
   let i = 0
   for (i = 0; i < path.length - 1; i++) {
-    obj = obj[path[i]]
+    obj = obj[path[i].replace(/['"]+/g, '')]
   }
 
-  obj[path[i]] = value
+  obj[path[i].replace(/['"]+/g, '')] = value
   return ref
 }
 
@@ -204,13 +204,13 @@ function unsetValue(path: string[], object: any): any {
   let i = 0
 
   for (i = 0; i < path.length - 1; i++) {
-    obj = obj[path[i]]
+    obj = obj[path[i].replace(/['"]+/g, '')]
   }
 
   if (Array.isArray(obj)) {
     obj.splice(path[i] as unknown as number, 1)
   } else {
-    delete obj[path[i]]
+    delete obj[path[i].replace(/['"]+/g, '')]
   }
 
   return ref
@@ -222,7 +222,7 @@ function pushToArray(path: string[], object: any, toPush: any): any {
   let i = 0
 
   for (i = 0; i < path.length; i++) {
-    obj = obj[path[i]]
+    obj = obj[path[i].replace(/['"]+/g, '')]
   }
 
   if (Array.isArray(obj)) {

@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <template v-for="field in components" :key="field.path.join('.')">
-      <label :for="field.path.join('.')"
+      <label class="form-label" :title="field.path[field.path.length - 1]+(field.optional ? '?' : '')" :for="field.path.join('.')"
         >{{ field.path[field.path.length - 1] }}{{ field.optional ? '?' : '' }}</label
       >
       <component
@@ -81,10 +81,16 @@ const components = computed(() =>
 <style scoped>
 .form-container {
   display: grid;
-  grid-template-columns: minmax(min-content, 30%) minmax(70%, 100%);
+  grid-template-columns: 30% 70%;
   grid-auto-rows: max-content;
   grid-gap: 1em;
   align-items: start;
   justify-items: start;
+}
+.form-label {
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 </style>

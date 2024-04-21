@@ -37,7 +37,6 @@ const code = ref(`#export: {
   a: [...string]
   b: [...string] | [...int]
   c: [...{a: string}]
-  d: [...[...string]]
 }`)
 const extensions = [editTheme]
 const error = ref(undefined as string | undefined);

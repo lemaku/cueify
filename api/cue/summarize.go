@@ -163,7 +163,7 @@ func partialStructExport(value cue.Value) interface{} {
 	for s.Next() {
 		property := s.Value()
 		pathSelectors := property.Path().Selectors()
-		propertyName := pathSelectors[len(pathSelectors)-1].String()
+		propertyName := strings.ReplaceAll(pathSelectors[len(pathSelectors)-1].String(), "\"", "")
 
 		if property.IncompleteKind().IsAnyOf(cue.NumberKind | cue.StringKind | cue.BoolKind | cue.NullKind | cue.BytesKind) {
 			if property.IsConcrete() {
