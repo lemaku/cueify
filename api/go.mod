@@ -25,4 +25,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace cuelang.org/go => /Users/lk/workspace/cue
+// Use this to point to CUE repository, adapted like described in README 
+replace cuelang.org/go => /path/to/cue
