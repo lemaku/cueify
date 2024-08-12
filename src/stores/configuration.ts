@@ -119,7 +119,7 @@ export const useConfigurationStore = defineStore({
     jumpTo(path: string[]) {
       const result = window.WasmAPI.Inspect(path, this.rawCurrent, this.rawSchema)
 
-      if (!isEqual(result.type, ['struct']) && !isEqual(result.type, ['list'])) {
+      if (!isEqual(result.type, ['struct']) && !isEqual(result.type, ['list']) && !isEqual(result.type, ['freeform'])) {
         this.jumpTo(path.slice(0, path.length - 1))
         // Give components time to be rendered and then trigger focus event
         setTimeout(() => emitter.$emit('focus', path), 50)
@@ -133,8 +133,9 @@ export const useConfigurationStore = defineStore({
     async set(path: string[], value: any) {
       await this.lock.acquire()
       const newRaw = setValue(path, value, this.rawCurrent)
+      console.log(newRaw);
       const res = window.WasmAPI.Validate(path, newRaw, this.rawSchema)
-
+      console.log(res)
       if (res.valid) {
         this.summarize(newRaw)
         this.jumpTo(this.rawPath)

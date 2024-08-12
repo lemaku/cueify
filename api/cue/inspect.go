@@ -24,15 +24,16 @@ type InspectionResult struct {
 type Kind string
 
 const (
-	Bottom Kind = "bottom"
-	Null   Kind = "null"
-	String Kind = "string"
-	Bytes  Kind = "bytes"
-	Int    Kind = "int"
-	Float  Kind = "float"
-	Bool   Kind = "bool"
-	List   Kind = "list"
-	Struct Kind = "struct"
+	Bottom   Kind = "bottom"
+	Null     Kind = "null"
+	String   Kind = "string"
+	Bytes    Kind = "bytes"
+	Int      Kind = "int"
+	Float    Kind = "float"
+	Bool     Kind = "bool"
+	List     Kind = "list"
+	Struct   Kind = "struct"
+	FreeForm Kind = "freeform"
 )
 
 func Inspect(path []string, json string, raw string) InspectionResult {
@@ -61,6 +62,13 @@ func Inspect(path []string, json string, raw string) InspectionResult {
 		default:
 			panic("WasmAPI.Inspect: Given configuration was too complex - at most one disjunction within the same type is allowed")
 		}
+
+		// If it is a struct but it has no fields, assume it is using dynamic fields => freeform kind
+		if len(properties) <= 0 {
+			kind := append(make([]Kind, 0), FreeForm)
+			return InspectionResult{Type: kind, Properties: properties}
+		}
+
 		return InspectionResult{Type: getKind(value), Properties: properties}
 	} else if value.IncompleteKind() == cue.ListKind {
 		var of []Kind
